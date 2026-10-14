@@ -62,7 +62,7 @@ footer{margin-top:40px;font-size:.85rem;color:var(--mut)}
 <section id="out" hidden>
   <h2 data-i="h_sum"></h2>
   <div class="sum" id="sum"></div>
-  <div class="row"><button id="exp" type="button" class="p" data-i="exp"></button><button id="reset" type="button" data-i="reset"></button></div>
+  <div class="row"><button id="exp" type="button" class="p" data-i="exp"></button><button id="reset" type="button" data-i="reset"></button><button id="imp" type="button" data-i="imp"></button><input id="impf" type="file" accept=".json,application/json" hidden></div>
   <h2 data-i="h_list"></h2>
   <div class="cat" id="cats"></div>
   <div id="list"></div>
@@ -79,9 +79,9 @@ footer{margin-top:40px;font-size:.85rem;color:var(--mut)}
 "use strict";
 var T={
 ms:{intro:"Alat semakan pendedahan untuk domain anda sendiri. Ia membina query carian awam (dork) untuk mencari fail terdedah, direktori terbuka, panel log masuk dan kebocoran lain, kemudian menunjukkan risiko, kategori OWASP dan cara membaikinya.",
-warn:"Guna hanya ke atas domain milik anda atau yang anda ada kebenaran bertulis untuk diuji. Akses tanpa kebenaran adalah kesalahan di bawah Akta Kesalahan Komputer 1997. Alat ini hanya membina query; ia tidak mengimbas sistem.",
+warn:"Guna hanya ke atas domain milik anda atau yang anda ada kebenaran bertulis untuk diuji. Akses tanpa kebenaran adalah kesalahan di bawah Akta Jenayah Komputer 1997. Alat ini hanya membina query; ia tidak mengimbas sistem.",
 h_target:"Sasaran",dom:"Domain anda",auth:"Saya memiliki domain ini atau ada kebenaran bertulis.",gen:"Jana dork",
-h_sum:"Ringkasan",exp:"Eksport laporan (.md)",reset:"Set semula",h_list:"Senarai dork",h_custom:"Dork tersuai",add:"Tambah",
+h_sum:"Ringkasan",imp:"Import hasil pengimbas (.json)",impe:"Fail JSON tidak sah.",impd:"Domain dalam fail tidak sepadan dengan sasaran.",exp:"Eksport laporan (.md)",reset:"Set semula",h_list:"Senarai dork",h_custom:"Dork tersuai",add:"Tambah",
 chint:"Guna {d} sebagai tempat domain. Disimpan dalam pelayar anda sahaja.",
 all:"Semua",copy:"Salin",open:"Buka",copied:"Disalin",risk:"Risiko",why:"Kenapa penting & cara baiki",fix:"Pembaikan",status:"Status",note:"Nota",
 s0:"Belum disemak",s1:"Selamat",s2:"Terdedah",tot:"Jumlah",chk:"Disemak",exposed:"Terdedah",score:"Skor risiko",
@@ -90,7 +90,7 @@ foot:"Projek Tahun Akhir - Keselamatan Siber. Tiada data dihantar ke mana-mana p
 en:{intro:"An exposure self-check for your own domain. It builds public search queries (dorks) that look for exposed files, open directories, login panels and other leaks, then shows the risk, OWASP category and how to fix each one.",
 warn:"Use only on domains you own or have written permission to test. Unauthorised access is an offence under Malaysia's Computer Crimes Act 1997. This tool only builds queries; it does not scan any system.",
 h_target:"Target",dom:"Your domain",auth:"I own this domain or have written permission.",gen:"Generate dorks",
-h_sum:"Summary",exp:"Export report (.md)",reset:"Reset",h_list:"Dork library",h_custom:"Custom dorks",add:"Add",
+h_sum:"Summary",imp:"Import scanner results (.json)",impe:"Invalid JSON file.",impd:"Domain in the file does not match the target.",exp:"Export report (.md)",reset:"Reset",h_list:"Dork library",h_custom:"Custom dorks",add:"Add",
 chint:"Use {d} where the domain goes. Saved in your browser only.",
 all:"All",copy:"Copy",open:"Open",copied:"Copied",risk:"Risk",why:"Why it matters and how to fix",fix:"Fix",status:"Status",note:"Notes",
 s0:"Not checked",s1:"Clean",s2:"Exposed",tot:"Total",chk:"Checked",exposed:"Exposed",score:"Risk score",
@@ -103,7 +103,7 @@ var D=[
 ["sql","Files","Critical","A05",'site:{d} ext:sql OR ext:db OR ext:dump',["Database dumps can expose all user data.","Dump pangkalan data boleh mendedahkan semua data pengguna."],["Delete dumps from public folders, store backups offline or encrypted, restrict access.","Padam dump dari folder awam, simpan sandaran luar talian atau disulitkan, hadkan akses."]],
 ["bak","Files","High","A05",'site:{d} ext:bak OR ext:old OR ext:backup OR ext:zip OR ext:tar',["Old backups can leak source code and credentials.","Sandaran lama boleh membocorkan kod sumber dan kelayakan."],["Remove backup files from the web server and use a separate backup location.","Buang fail sandaran dari pelayan web dan guna lokasi sandaran berasingan."]],
 ["git","Files","High","A05",'site:{d} inurl:".git"',["An exposed .git folder can reveal full source code history.","Folder .git yang terdedah boleh mendedahkan sejarah kod sumber penuh."],["Block /.git in the server config and never deploy the repo folder itself.","Sekat /.git dalam config pelayan dan jangan deploy folder repo itu sendiri."]],
-["log","Files","Medium","A09",'site:{d} ext:log',["Log files can contain usernames, IPs, tokens and internal paths.","Fail log boleh mengandungi nama pengguna, IP, token dan laluan dalaman."],["Store logs outside the web root and disable public access.","Simpan log di luar web root dan matikan akses awam."]],
+["log","Files","Medium","A05",'site:{d} ext:log',["Log files can contain usernames, IPs, tokens and internal paths.","Fail log boleh mengandungi nama pengguna, IP, token dan laluan dalaman."],["Store logs outside the web root and disable public access.","Simpan log di luar web root dan matikan akses awam."]],
 ["docs","Files","Medium","A01",'site:{d} (ext:pdf OR ext:docx OR ext:xlsx) (confidential OR internal OR password)',["Internal documents indexed by search engines.","Dokumen dalaman yang diindeks enjin carian."],["Remove or protect the files, add authentication, and request removal from search results.","Buang atau lindungi fail, tambah pengesahan, dan mohon pembuangan dari hasil carian."]],
 ["dir","Exposure","Medium","A05",'site:{d} intitle:"index of"',["Open directory listing shows every file in a folder.","Senarai direktori terbuka menunjukkan setiap fail dalam folder."],["Disable directory listing (Options -Indexes in Apache, autoindex off in Nginx).","Matikan senarai direktori (Options -Indexes pada Apache, autoindex off pada Nginx)."]],
 ["php","Exposure","Medium","A05",'site:{d} ext:php intitle:phpinfo',["phpinfo pages reveal server versions, paths and settings.","Halaman phpinfo mendedahkan versi pelayan, laluan dan tetapan."],["Delete phpinfo files from production.","Padam fail phpinfo dari produksi."]],
@@ -112,11 +112,18 @@ var D=[
 ["login","Access","Low","A07",'site:{d} (inurl:login OR inurl:admin OR inurl:wp-admin OR inurl:signin)',["Finds login and admin panels that attackers target for brute force.","Mencari panel log masuk dan admin yang menjadi sasaran brute force."],["Enable MFA, rate limiting, and restrict admin pages by IP or VPN.","Aktifkan MFA, had kadar, dan hadkan halaman admin mengikut IP atau VPN."]],
 ["paste","Leaks","Medium","A02",'site:pastebin.com "{d}"',["Paste sites sometimes hold leaked credentials or data mentioning your domain.","Laman paste kadangkala mengandungi kelayakan atau data bocor yang menyebut domain anda."],["Reset affected passwords, report the paste for removal, and monitor with breach alerts.","Tetapkan semula kata laluan terjejas, laporkan paste untuk dibuang, dan pantau dengan amaran kebocoran."]],
 ["code","Leaks","High","A02",'site:github.com "{d}" (password OR secret OR api_key)',["Public repos may contain hard-coded secrets tied to your domain.","Repo awam mungkin mengandungi rahsia yang ditanam dalam kod berkaitan domain anda."],["Remove secrets from history, rotate keys, and enable GitHub secret scanning.","Buang rahsia dari sejarah, tukar kunci, dan aktifkan secret scanning GitHub."]],
-["s3","Leaks","High","A01",'site:s3.amazonaws.com "{d}"',["Public cloud storage buckets named after your organisation.","Baldi storan awan awam yang dinamakan sempena organisasi anda."],["Block public access on buckets and review bucket policies.","Sekat akses awam pada baldi dan semak dasar baldi."]]
+["s3","Leaks","High","A01",'site:s3.amazonaws.com "{d}"',["Public cloud storage buckets named after your organisation.","Baldi storan awan awam yang dinamakan sempena organisasi anda."],["Block public access on buckets and review bucket policies.","Sekat akses awam pada baldi dan semak dasar baldi."]],
+["key","Files","Critical","A02",'site:{d} (ext:pem OR ext:key OR ext:ppk OR "BEGIN RSA PRIVATE KEY")',["Private keys exposed on the web let attackers impersonate your servers or log in.","Kunci peribadi yang terdedah membolehkan penyerang menyamar pelayan anda atau log masuk."],["Delete the files, revoke and regenerate the keys, and audit access logs.","Padam fail, batalkan dan jana semula kunci, dan audit log akses."]],
+["dbpw","Leaks","Critical","A02",'site:{d} (intext:"DB_PASSWORD" OR intext:"db_password" OR intext:"mysql_connect")',["Indexed pages that print database credentials or connection code.","Halaman diindeks yang memaparkan kelayakan pangkalan data atau kod sambungan."],["Remove the content, rotate the credentials, and request cache removal from the search engine.","Buang kandungan, tukar kelayakan, dan mohon pembuangan cache dari enjin carian."]],
+["csv","Files","High","A01",'site:{d} (ext:csv OR ext:xls OR ext:xlsx) (email OR username OR password)',["Spreadsheets with user lists or credentials exposed publicly.","Hamparan dengan senarai pengguna atau kelayakan terdedah secara awam."],["Remove or protect the files, check for personal data (PDPA 2010), and notify affected users if needed.","Buang atau lindungi fail, semak data peribadi (PDPA 2010), dan maklumkan pengguna terjejas jika perlu."]],
+["pma","Access","High","A05",'site:{d} (inurl:phpmyadmin OR inurl:adminer OR inurl:pma)',["Public database admin tools are a direct path to your data.","Alat admin pangkalan data awam ialah laluan terus ke data anda."],["Restrict by IP or VPN, remove if unused, and use strong unique credentials with MFA where possible.","Hadkan mengikut IP atau VPN, buang jika tidak digunakan, dan guna kelayakan kukuh serta MFA jika boleh."]],
+["api","Exposure","Medium","A05",'site:{d} (inurl:swagger OR inurl:api-docs OR inurl:graphql)',["Public API documentation or GraphQL endpoints reveal your internal API surface.","Dokumentasi API awam atau endpoint GraphQL mendedahkan permukaan API dalaman anda."],["Require authentication for docs, disable introspection in production.","Wajibkan pengesahan untuk dokumentasi, matikan introspection dalam produksi."]]
 ];
 var RW={Critical:4,High:3,Medium:2,Low:1,Info:0};
 var $=function(i){return document.getElementById(i)};
 var lang="ms",dom="",cat="all",state={},custom=[];
+function cleanState(o){var r={};if(!o||typeof o!=="object")return r;Object.keys(o).slice(0,100).forEach(function(k){var v=o[k];if(/^[a-z0-9]{1,12}$/.test(k)&&v&&typeof v==="object"){r[k]={s:(v.s==="1"||v.s==="2")?v.s:"0",n:typeof v.n==="string"?v.n.slice(0,500):""}}});return r}
+function save(){try{localStorage.setItem("df_state",JSON.stringify({dom:dom,state:state}))}catch(e){}}
 
 function t(k){return T[lang][k]||k}
 function applyLang(){
@@ -164,12 +171,13 @@ function render(){
     [["0","s0"],["1","s1"],["2","s2"]].forEach(function(o){var op2=mk("option",null,t(o[1]));op2.value=o[0];if(o[0]===s)op2.selected=true;sel.appendChild(op2)});
     sel.onchange=function(){(state[x.id]=state[x.id]||{}).s=sel.value;render()};
     var nt=mk("textarea");nt.rows=2;nt.placeholder=t("note");nt.value=(state[x.id]||{}).n||"";nt.maxLength=500;
-    nt.oninput=function(){(state[x.id]=state[x.id]||{}).n=nt.value};
+    nt.oninput=function(){(state[x.id]=state[x.id]||{}).n=nt.value;save()};
     dt.appendChild(sel);dt.appendChild(nt);c.appendChild(dt);lw.appendChild(c);
   });
   var sc=max?Math.round(pts/max*100):0;
   var sm=$("sum");sm.textContent="";
   [[t("tot"),all.length],[t("chk"),checked],[t("exposed"),exposed],[t("score"),sc+"%"]].forEach(function(p){var d=mk("div");d.appendChild(mk("b",null,String(p[1])));d.appendChild(mk("span","mut",p[0]));sm.appendChild(d)});
+  save();
 }
 
 function report(){
@@ -198,10 +206,13 @@ $("cadd").onclick=function(){
   try{localStorage.setItem("df_custom",JSON.stringify(custom))}catch(e){}
   render();
 };
+$("imp").onclick=function(){$("impf").click()};
+$("impf").onchange=function(){var f=this.files[0];this.value="";if(!f)return;if(f.size>1e6){$("err").textContent=t("impe");return}var r=new FileReader();r.onload=function(){try{var j=JSON.parse(r.result);if(!j||!Array.isArray(j.results))throw 0;if(cleanDomain(String(j.domain||""))!==dom){$("err").textContent=t("impd");return}j.results.forEach(function(x){if(x&&/^[a-z0-9]{1,12}$/.test(x.id)&&(x.status==="1"||x.status==="2")){state[x.id]={s:x.status,n:String(x.note||"").slice(0,500)}}});$("err").textContent="";render()}catch(e){$("err").textContent=t("impe")}};r.readAsText(f)};
 $("exp").onclick=report;
 $("reset").onclick=function(){state={};render()};
 $("lang").onclick=function(){lang=lang==="ms"?"en":"ms";applyLang()};
 try{var s=JSON.parse(localStorage.getItem("df_custom")||"[]");if(Array.isArray(s))custom=s.filter(function(x){return typeof x==="string"&&x.length<=200}).slice(0,20)}catch(e){}
+try{var P=JSON.parse(localStorage.getItem("df_state")||"{}");if(P&&validDomain(String(P.dom))){dom=P.dom;state=cleanState(P.state);$("dom").value=dom;$("auth").checked=true;$("out").hidden=false}}catch(e){}
 applyLang();
 })();
 </script>
