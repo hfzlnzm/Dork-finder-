@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dork Finder</title>
+<style>
+  :root{
+    --bg:#0c0f0a; --panel:#131810; --line:#263222; --text:#d9e8c9; --dim:#7f9470;
+    --accent:#8fd13f; --accent2:#4fb3a9; --mono:'JetBrains Mono','SFMono-Regular',Consolas,monospace;
+    color-scheme: dark;
+    box-sizing:border-box;
+    padding-top: env(safe-area-inset-top,0px);
+    padding-bottom: env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box}
+  html{scroll-padding-top: env(safe-area-inset-top,0px);}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:var(--mono); min-height:100%;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:28px 28px;
+    background-attachment:fixed;
+  }
+  header{
+    padding:28px 20px 16px; max-width:760px; margin:0 auto;
+  }
+  .tag{color:var(--accent2); font-size:12px; letter-spacing:.04em;}
+  h1{margin:6px 0 8px; font-size:22px; color:var(--accent); font-weight:600;}
+  p.lede{margin:0; color:var(--dim); font-size:13px; line-height:1.6; max-width:60ch;}
+  main{max-width:760px; margin:0 auto; padding:0 20px 60px;}
+  .panel{
+    background:var(--panel); border:1px solid var(--line); border-radius:4px;
+    padding:18px; margin-top:18px;
+  }
+  label{display:block; font-size:12px; color:var(--dim); margin-bottom:8px;}
+  .inputrow{display:flex; gap:8px; flex-wrap:wrap;}
+  input[type=text]{
+    flex:1; min-width:180px; background:#0a0d07; border:1px solid var(--line); color:var(--text);
+    padding:11px 12px; font-family:var(--mono); font-size:14px; border-radius:3px; outline:none;
+  }
+  input[type=text]:focus{border-color:var(--accent);}
+  button.primary{
+    background:var(--accent); color:#0c0f0a; border:none; padding:11px 18px;
+    font-family:var(--mono); font-weight:600; font-size:14px; border-radius:3px; cursor:pointer;
+  }
+  button.primary:active{transform:translateY(1px);}
+  .cats{display:flex; flex-wrap:wrap; gap:8px 14px; margin-top:14px;}
+  .cats label{display:flex; align-items:center; gap:6px; color:var(--text); font-size:12.5px; margin:0;}
+  .cats input{accent-color:var(--accent);}
+  .results{margin-top:8px;}
+  .empty{color:var(--dim); font-size:13px; padding:30px 0; text-align:center; border:1px dashed var(--line); border-radius:4px; margin-top:18px;}
+  .group h2{font-size:12px; color:var(--accent2); letter-spacing:.03em; margin:22px 0 8px; font-weight:600;}
+  .card{
+    display:flex; align-items:center; gap:10px; background:#0a0d07; border:1px solid var(--line);
+    border-radius:3px; padding:10px 12px; margin-bottom:7px;
+  }
+  .card code{flex:1; font-size:12.5px; color:var(--text); word-break:break-all; line-height:1.5;}
+  .card .why{display:block; color:var(--dim); font-size:11px; margin-top:3px;}
+  .iconbtn{
+    background:transparent; border:1px solid var(--line); color:var(--dim); border-radius:3px;
+    padding:7px 10px; font-family:var(--mono); font-size:11px; cursor:pointer; white-space:nowrap;
+  }
+  .iconbtn:hover{border-color:var(--accent2); color:var(--accent2);}
+  .iconbtn.open{color:var(--accent); border-color:var(--accent); text-decoration:none; display:inline-flex; align-items:center;}
+  footer{max-width:760px; margin:0 auto; padding:10px 20px 40px; color:var(--dim); font-size:11.5px; line-height:1.6;}
+  @media (max-width:480px){
+    .card{flex-direction:column; align-items:stretch;}
+    .card .btns{display:flex; gap:7px;}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="tag">RECON / GOOGLE DORKING</div>
+  <h1>Dork Finder</h1>
+  <p class="lede">Masukkan domain, dan alat ini akan bina senarai query Google dork untuk cari fail terdedah, direktori terbuka, panel log masuk, dan lain-lain. Setiap query boleh disalin atau terus dibuka dalam Google.</p>
+</header>
+<main>
+  <div class="panel">
+    <label for="domain">Domain sasaran</label>
+    <div class="inputrow">
+      <input type="text" id="domain" placeholder="contoh.com" autocomplete="off" spellcheck="false">
+      <button class="primary" onclick="generate()">Jana dork</button>
+    </div>
+    <div class="cats" id="cats"></div>
+  </div>
+
+  <div id="results">
+    <div class="empty">Masukkan domain dan tekan "Jana dork" untuk mula.</div>
+  </div>
+</main>
+<footer>
+  Guna hanya ke atas domain yang anda miliki atau ada kebenaran bertulis untuk diuji. Alat ini cuma membina query carian awam — ia tidak mengimbas atau mengakses mana-mana sistem secara langsung.
+</footer>
+
+<script>
+const CATEGORIES = [
+  { id:'files', label:'Fail terdedah', items:[
+    ['filetype:pdf', 'Dokumen PDF'],
+    ['filetype:doc OR filetype:docx', 'Dokumen Word'],
+    ['filetype:xls OR filetype:xlsx', 'Spreadsheet'],
+    ['filetype:csv', 'Fail data CSV'],
+    ['filetype:sql', 'Dump pangkalan data SQL'],
+    ['filetype:log', 'Fail log'],
+    ['filetype:env', 'Fail .env (secrets/credentials)'],
+    ['filetype:bak OR filetype:backup OR filetype:old', 'Fail backup'],
+    ['filetype:zip OR filetype:rar OR filetype:tar OR filetype:gz', 'Arkib termampat'],
+    ['filetype:json', 'Fail JSON (config/data)'],
+    ['filetype:xml', 'Fail XML'],
+    ['filetype:yml OR filetype:yaml', 'Fail konfigurasi YAML'],
+    ['filetype:conf OR filetype:config OR filetype:ini', 'Fail konfigurasi'],
+  ]},
+  { id:'dirs', label:'Direktori & index', items:[
+    ['intitle:"index of"', 'Direktori terbuka (directory listing)'],
+    ['intitle:"index of" "backup"', 'Direktori backup terbuka'],
+    ['intitle:"index of" "parent directory"', 'Senarai direktori penuh'],
+  ]},
+  { id:'login', label:'Panel log masuk & admin', items:[
+    ['inurl:admin intitle:login', 'Panel admin'],
+    ['inurl:login', 'Laman log masuk'],
+    ['intitle:"phpMyAdmin" inurl:main.php', 'phpMyAdmin terdedah'],
+    ['inurl:wp-login.php', 'Login WordPress'],
+  ]},
+  { id:'errors', label:'Error & maklumat sistem', items:[
+    ['intext:"sql syntax near" OR intext:"syntax error has occurred"', 'Mesej ralat SQL'],
+    ['intext:"Warning: mysql_connect()"', 'Ralat sambungan MySQL'],
+    ['intext:"stack trace"', 'Stack trace terdedah'],
+    ['intitle:"phpinfo()"', 'Halaman phpinfo()'],
+  ]},
+  { id:'vcs', label:'Version control & dev', items:[
+    ['inurl:".git" -github.com', 'Repo .git terdedah'],
+    ['inurl:".svn"', 'Repo .svn terdedah'],
+    ['inurl:swagger OR inurl:api-docs', 'Dokumentasi API'],
+  ]},
+  { id:'cloud', label:'Storan awan tersalah konfigurasi', items:[
+    ['site:s3.amazonaws.com', 'Bucket S3 awam (ganti site: ikut keperluan)'],
+    ['intext:"AKIA" filetype:env OR filetype:txt', 'Kunci AWS terdedah'],
+  ]},
+];
+
+const catsDiv = document.getElementById('cats');
+CATEGORIES.forEach(c=>{
+  const lbl = document.createElement('label');
+  lbl.innerHTML = `<input type="checkbox" value="${c.id}" checked> ${c.label}`;
+  catsDiv.appendChild(lbl);
+});
+
+function esc(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function generate(){
+  const domainRaw = document.getElementById('domain').value.trim();
+  const results = document.getElementById('results');
+  if(!domainRaw){
+    results.innerHTML = '<div class="empty">Sila masukkan domain dahulu (cth: contoh.com).</div>';
+    return;
+  }
+  const domain = domainRaw.replace(/^https?:\/\//,'').replace(/\/.*$/,'');
+  const checked = Array.from(document.querySelectorAll('.cats input:checked')).map(i=>i.value);
+
+  let html = '';
+  CATEGORIES.filter(c=>checked.includes(c.id)).forEach(cat=>{
+    html += `<div class="group"><h2>${esc(cat.label)}</h2>`;
+    cat.items.forEach(([frag, why])=>{
+      const query = `site:${domain} ${frag}`;
+      const qEsc = esc(query);
+      html += `
+        <div class="card">
+          <div style="flex:1">
+            <code>${qEsc}<span class="why">${esc(why)}</span></code>
+          </div>
+          <div class="btns">
+            <button class="iconbtn" onclick="copyQuery(this)" data-q="${qEsc}">Salin</button>
+            <a class="iconbtn open" href="https://www.google.com/search?q=${encodeURIComponent(query)}" target="_blank" rel="noopener noreferrer">Buka</a>
+          </div>
+        </div>`;
+    });
+    html += `</div>`;
+  });
+
+  results.innerHTML = html || '<div class="empty">Pilih sekurang-kurangnya satu kategori.</div>';
+}
+
+function copyQuery(btn){
+  const q = btn.getAttribute('data-q');
+  const ta = document.createElement('textarea');
+  ta.value = q.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>');
+  document.body.appendChild(ta);
+  ta.select();
+  try{ document.execCommand('copy'); }catch(e){}
+  document.body.removeChild(ta);
+  const old = btn.textContent;
+  btn.textContent = 'Disalin!';
+  setTimeout(()=>btn.textContent = old, 1200);
+}
+
+document.getElementById('domain').addEventListener('keydown', e=>{
+  if(e.key === 'Enter') generate();
+});
+</script>
+</body>
+</html>
