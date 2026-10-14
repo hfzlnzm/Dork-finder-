@@ -1,206 +1,209 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Dork Finder</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Dork Finder - Exposure Self-Check</title>
 <style>
-  :root{
-    --bg:#0c0f0a; --panel:#131810; --line:#263222; --text:#d9e8c9; --dim:#7f9470;
-    --accent:#8fd13f; --accent2:#4fb3a9; --mono:'JetBrains Mono','SFMono-Regular',Consolas,monospace;
-    color-scheme: dark;
-    box-sizing:border-box;
-    padding-top: env(safe-area-inset-top,0px);
-    padding-bottom: env(safe-area-inset-bottom,0px);
-  }
-  *{box-sizing:border-box}
-  html{scroll-padding-top: env(safe-area-inset-top,0px);}
-  body{
-    margin:0; background:var(--bg); color:var(--text);
-    font-family:var(--mono); min-height:100%;
-    background-image:
-      linear-gradient(var(--line) 1px, transparent 1px),
-      linear-gradient(90deg, var(--line) 1px, transparent 1px);
-    background-size:28px 28px;
-    background-attachment:fixed;
-  }
-  header{
-    padding:28px 20px 16px; max-width:760px; margin:0 auto;
-  }
-  .tag{color:var(--accent2); font-size:12px; letter-spacing:.04em;}
-  h1{margin:6px 0 8px; font-size:22px; color:var(--accent); font-weight:600;}
-  p.lede{margin:0; color:var(--dim); font-size:13px; line-height:1.6; max-width:60ch;}
-  main{max-width:760px; margin:0 auto; padding:0 20px 60px;}
-  .panel{
-    background:var(--panel); border:1px solid var(--line); border-radius:4px;
-    padding:18px; margin-top:18px;
-  }
-  label{display:block; font-size:12px; color:var(--dim); margin-bottom:8px;}
-  .inputrow{display:flex; gap:8px; flex-wrap:wrap;}
-  input[type=text]{
-    flex:1; min-width:180px; background:#0a0d07; border:1px solid var(--line); color:var(--text);
-    padding:11px 12px; font-family:var(--mono); font-size:14px; border-radius:3px; outline:none;
-  }
-  input[type=text]:focus{border-color:var(--accent);}
-  button.primary{
-    background:var(--accent); color:#0c0f0a; border:none; padding:11px 18px;
-    font-family:var(--mono); font-weight:600; font-size:14px; border-radius:3px; cursor:pointer;
-  }
-  button.primary:active{transform:translateY(1px);}
-  .cats{display:flex; flex-wrap:wrap; gap:8px 14px; margin-top:14px;}
-  .cats label{display:flex; align-items:center; gap:6px; color:var(--text); font-size:12.5px; margin:0;}
-  .cats input{accent-color:var(--accent);}
-  .results{margin-top:8px;}
-  .empty{color:var(--dim); font-size:13px; padding:30px 0; text-align:center; border:1px dashed var(--line); border-radius:4px; margin-top:18px;}
-  .group h2{font-size:12px; color:var(--accent2); letter-spacing:.03em; margin:22px 0 8px; font-weight:600;}
-  .card{
-    display:flex; align-items:center; gap:10px; background:#0a0d07; border:1px solid var(--line);
-    border-radius:3px; padding:10px 12px; margin-bottom:7px;
-  }
-  .card code{flex:1; font-size:12.5px; color:var(--text); word-break:break-all; line-height:1.5;}
-  .card .why{display:block; color:var(--dim); font-size:11px; margin-top:3px;}
-  .iconbtn{
-    background:transparent; border:1px solid var(--line); color:var(--dim); border-radius:3px;
-    padding:7px 10px; font-family:var(--mono); font-size:11px; cursor:pointer; white-space:nowrap;
-  }
-  .iconbtn:hover{border-color:var(--accent2); color:var(--accent2);}
-  .iconbtn.open{color:var(--accent); border-color:var(--accent); text-decoration:none; display:inline-flex; align-items:center;}
-  footer{max-width:760px; margin:0 auto; padding:10px 20px 40px; color:var(--dim); font-size:11.5px; line-height:1.6;}
-  @media (max-width:480px){
-    .card{flex-direction:column; align-items:stretch;}
-    .card .btns{display:flex; gap:7px;}
-  }
+:root{--bg:#f6f7f5;--card:#fff;--ink:#17201d;--mut:#5b6761;--line:#d9dfdb;--acc:#0b6e5c;--accfg:#fff;--crit:#a3123a;--high:#b4470a;--med:#8a6d00;--low:#2c6aa0;--info:#5b6761}
+@media(prefers-color-scheme:dark){:root{--bg:#101614;--card:#18211e;--ink:#e6ece9;--mut:#9aa8a1;--line:#2c3834;--acc:#4cc2a8;--accfg:#06241d;--crit:#ff7a9c;--high:#ffa066;--med:#e8c34a;--low:#7db8ee;--info:#9aa8a1}}
+*{box-sizing:border-box}
+html{padding-top:env(safe-area-inset-top,0);padding-bottom:env(safe-area-inset-bottom,0)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:760px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:2rem;margin:.2em 0 .3em;letter-spacing:-.02em}
+h2{font-size:1.15rem;margin:1.6em 0 .6em}
+p{margin:.4em 0;max-width:68ch}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mut{color:var(--mut);font-size:.9rem}
+button,select,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid var(--line);background:var(--card);border-radius:8px;padding:8px 12px}
+button.p{background:var(--acc);color:var(--accfg);border-color:var(--acc);font-weight:600}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+input[type=text],select,textarea{width:100%;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:9px 11px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.row>*{flex:1 1 140px}
+.warn{border-left:4px solid var(--high);background:var(--card);padding:10px 12px;border-radius:0 8px 8px 0;font-size:.92rem}
+.err{color:var(--crit);font-size:.9rem;min-height:1.3em}
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
+.sum div{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.sum b{display:block;font-size:1.4rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;margin:10px 0}
+.card.done{opacity:.8}
+.q{font:.85rem/1.4 ui-monospace,Consolas,monospace;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px;word-break:break-all;margin:8px 0}
+.tag{display:inline-block;font-size:.78rem;font-weight:700;padding:1px 8px;border-radius:99px;border:1.5px solid currentColor;margin-right:6px}
+.Critical{color:var(--crit)}.High{color:var(--high)}.Medium{color:var(--med)}.Low{color:var(--low)}.Info{color:var(--info)}
+.btns{display:flex;gap:6px;flex-wrap:wrap}
+details{margin-top:8px}summary{cursor:pointer;color:var(--acc);font-weight:600}
+.cat{display:flex;gap:6px;flex-wrap:wrap}
+.cat button[aria-pressed=true]{background:var(--acc);color:var(--accfg);border-color:var(--acc)}
+footer{margin-top:40px;font-size:.85rem;color:var(--mut)}
 </style>
 </head>
 <body>
-<header>
-  <div class="tag">RECON / GOOGLE DORKING</div>
-  <h1>Dork Finder</h1>
-  <p class="lede">Masukkan domain, dan alat ini akan bina senarai query Google dork untuk cari fail terdedah, direktori terbuka, panel log masuk, dan lain-lain. Setiap query boleh disalin atau terus dibuka dalam Google.</p>
-</header>
 <main>
-  <div class="panel">
-    <label for="domain">Domain sasaran</label>
-    <div class="inputrow">
-      <input type="text" id="domain" placeholder="contoh.com" autocomplete="off" spellcheck="false">
-      <button class="primary" onclick="generate()">Jana dork</button>
-    </div>
-    <div class="cats" id="cats"></div>
-  </div>
+<div class="top"><span class="mut">Exposure self-check</span><button id="lang" type="button" aria-label="Language">EN / BM</button></div>
+<h1>Dork Finder</h1>
+<p data-i="intro"></p>
+<p class="warn" data-i="warn"></p>
 
-  <div id="results">
-    <div class="empty">Masukkan domain dan tekan "Jana dork" untuk mula.</div>
-  </div>
+<h2 data-i="h_target"></h2>
+<label for="dom" class="mut" data-i="dom"></label>
+<input id="dom" type="text" inputmode="url" autocomplete="off" placeholder="example.com">
+<div class="row">
+  <select id="eng" aria-label="Search engine"><option value="g">Google</option><option value="b">Bing</option><option value="d">DuckDuckGo</option></select>
+</div>
+<label class="mut"><input type="checkbox" id="auth"> <span data-i="auth"></span></label>
+<div class="err" id="err" role="alert"></div>
+<button class="p" id="go" type="button" data-i="gen"></button>
+
+<section id="out" hidden>
+  <h2 data-i="h_sum"></h2>
+  <div class="sum" id="sum"></div>
+  <div class="row"><button id="exp" type="button" class="p" data-i="exp"></button><button id="reset" type="button" data-i="reset"></button></div>
+  <h2 data-i="h_list"></h2>
+  <div class="cat" id="cats"></div>
+  <div id="list"></div>
+  <h2 data-i="h_custom"></h2>
+  <div class="row"><input id="cq" type="text" placeholder='intitle:"admin" {d}' aria-label="Custom dork"><button id="cadd" type="button" data-i="add"></button></div>
+  <p class="mut" data-i="chint"></p>
+</section>
+
+<footer data-i="foot"></footer>
 </main>
-<footer>
-  Guna hanya ke atas domain yang anda miliki atau ada kebenaran bertulis untuk diuji. Alat ini cuma membina query carian awam — ia tidak mengimbas atau mengakses mana-mana sistem secara langsung.
-</footer>
 
 <script>
-const CATEGORIES = [
-  { id:'files', label:'Fail terdedah', items:[
-    ['filetype:pdf', 'Dokumen PDF'],
-    ['filetype:doc OR filetype:docx', 'Dokumen Word'],
-    ['filetype:xls OR filetype:xlsx', 'Spreadsheet'],
-    ['filetype:csv', 'Fail data CSV'],
-    ['filetype:sql', 'Dump pangkalan data SQL'],
-    ['filetype:log', 'Fail log'],
-    ['filetype:env', 'Fail .env (secrets/credentials)'],
-    ['filetype:bak OR filetype:backup OR filetype:old', 'Fail backup'],
-    ['filetype:zip OR filetype:rar OR filetype:tar OR filetype:gz', 'Arkib termampat'],
-    ['filetype:json', 'Fail JSON (config/data)'],
-    ['filetype:xml', 'Fail XML'],
-    ['filetype:yml OR filetype:yaml', 'Fail konfigurasi YAML'],
-    ['filetype:conf OR filetype:config OR filetype:ini', 'Fail konfigurasi'],
-  ]},
-  { id:'dirs', label:'Direktori & index', items:[
-    ['intitle:"index of"', 'Direktori terbuka (directory listing)'],
-    ['intitle:"index of" "backup"', 'Direktori backup terbuka'],
-    ['intitle:"index of" "parent directory"', 'Senarai direktori penuh'],
-  ]},
-  { id:'login', label:'Panel log masuk & admin', items:[
-    ['inurl:admin intitle:login', 'Panel admin'],
-    ['inurl:login', 'Laman log masuk'],
-    ['intitle:"phpMyAdmin" inurl:main.php', 'phpMyAdmin terdedah'],
-    ['inurl:wp-login.php', 'Login WordPress'],
-  ]},
-  { id:'errors', label:'Error & maklumat sistem', items:[
-    ['intext:"sql syntax near" OR intext:"syntax error has occurred"', 'Mesej ralat SQL'],
-    ['intext:"Warning: mysql_connect()"', 'Ralat sambungan MySQL'],
-    ['intext:"stack trace"', 'Stack trace terdedah'],
-    ['intitle:"phpinfo()"', 'Halaman phpinfo()'],
-  ]},
-  { id:'vcs', label:'Version control & dev', items:[
-    ['inurl:".git" -github.com', 'Repo .git terdedah'],
-    ['inurl:".svn"', 'Repo .svn terdedah'],
-    ['inurl:swagger OR inurl:api-docs', 'Dokumentasi API'],
-  ]},
-  { id:'cloud', label:'Storan awan tersalah konfigurasi', items:[
-    ['site:s3.amazonaws.com', 'Bucket S3 awam (ganti site: ikut keperluan)'],
-    ['intext:"AKIA" filetype:env OR filetype:txt', 'Kunci AWS terdedah'],
-  ]},
+(function(){
+"use strict";
+var T={
+ms:{intro:"Alat semakan pendedahan untuk domain anda sendiri. Ia membina query carian awam (dork) untuk mencari fail terdedah, direktori terbuka, panel log masuk dan kebocoran lain, kemudian menunjukkan risiko, kategori OWASP dan cara membaikinya.",
+warn:"Guna hanya ke atas domain milik anda atau yang anda ada kebenaran bertulis untuk diuji. Akses tanpa kebenaran adalah kesalahan di bawah Akta Kesalahan Komputer 1997. Alat ini hanya membina query; ia tidak mengimbas sistem.",
+h_target:"Sasaran",dom:"Domain anda",auth:"Saya memiliki domain ini atau ada kebenaran bertulis.",gen:"Jana dork",
+h_sum:"Ringkasan",exp:"Eksport laporan (.md)",reset:"Set semula",h_list:"Senarai dork",h_custom:"Dork tersuai",add:"Tambah",
+chint:"Guna {d} sebagai tempat domain. Disimpan dalam pelayar anda sahaja.",
+all:"Semua",copy:"Salin",open:"Buka",copied:"Disalin",risk:"Risiko",why:"Kenapa penting & cara baiki",fix:"Pembaikan",status:"Status",note:"Nota",
+s0:"Belum disemak",s1:"Selamat",s2:"Terdedah",tot:"Jumlah",chk:"Disemak",exposed:"Terdedah",score:"Skor risiko",
+eDom:"Domain tidak sah. Contoh: example.com",eAuth:"Sila sahkan anda ada kebenaran.",eC:"Dork mesti mengandungi {d} dan tidak lebih 200 aksara.",
+foot:"Projek Tahun Akhir - Keselamatan Siber. Tiada data dihantar ke mana-mana pelayan; semua diproses dalam pelayar anda."},
+en:{intro:"An exposure self-check for your own domain. It builds public search queries (dorks) that look for exposed files, open directories, login panels and other leaks, then shows the risk, OWASP category and how to fix each one.",
+warn:"Use only on domains you own or have written permission to test. Unauthorised access is an offence under Malaysia's Computer Crimes Act 1997. This tool only builds queries; it does not scan any system.",
+h_target:"Target",dom:"Your domain",auth:"I own this domain or have written permission.",gen:"Generate dorks",
+h_sum:"Summary",exp:"Export report (.md)",reset:"Reset",h_list:"Dork library",h_custom:"Custom dorks",add:"Add",
+chint:"Use {d} where the domain goes. Saved in your browser only.",
+all:"All",copy:"Copy",open:"Open",copied:"Copied",risk:"Risk",why:"Why it matters and how to fix",fix:"Fix",status:"Status",note:"Notes",
+s0:"Not checked",s1:"Clean",s2:"Exposed",tot:"Total",chk:"Checked",exposed:"Exposed",score:"Risk score",
+eDom:"Invalid domain. Example: example.com",eAuth:"Please confirm you have permission.",eC:"Dork must contain {d} and be under 200 characters.",
+foot:"Final Year Project, Cybersecurity. No data is sent to any server; everything runs in your browser."}
+};
+// id, category, risk, OWASP 2021, query, [desc en, desc ms], [fix en, fix ms]
+var D=[
+["env","Files","Critical","A05",'site:{d} ext:env OR ext:ini OR ext:conf OR ext:cfg',["Configuration files that may hold keys, passwords or database settings.","Fail konfigurasi yang mungkin mengandungi kunci, kata laluan atau tetapan pangkalan data."],["Move config outside the web root, block these extensions in the server, and rotate any exposed secrets.","Alihkan config keluar dari web root, sekat sambungan ini pada pelayan, dan tukar rahsia yang terdedah."]],
+["sql","Files","Critical","A05",'site:{d} ext:sql OR ext:db OR ext:dump',["Database dumps can expose all user data.","Dump pangkalan data boleh mendedahkan semua data pengguna."],["Delete dumps from public folders, store backups offline or encrypted, restrict access.","Padam dump dari folder awam, simpan sandaran luar talian atau disulitkan, hadkan akses."]],
+["bak","Files","High","A05",'site:{d} ext:bak OR ext:old OR ext:backup OR ext:zip OR ext:tar',["Old backups can leak source code and credentials.","Sandaran lama boleh membocorkan kod sumber dan kelayakan."],["Remove backup files from the web server and use a separate backup location.","Buang fail sandaran dari pelayan web dan guna lokasi sandaran berasingan."]],
+["git","Files","High","A05",'site:{d} inurl:".git"',["An exposed .git folder can reveal full source code history.","Folder .git yang terdedah boleh mendedahkan sejarah kod sumber penuh."],["Block /.git in the server config and never deploy the repo folder itself.","Sekat /.git dalam config pelayan dan jangan deploy folder repo itu sendiri."]],
+["log","Files","Medium","A09",'site:{d} ext:log',["Log files can contain usernames, IPs, tokens and internal paths.","Fail log boleh mengandungi nama pengguna, IP, token dan laluan dalaman."],["Store logs outside the web root and disable public access.","Simpan log di luar web root dan matikan akses awam."]],
+["docs","Files","Medium","A01",'site:{d} (ext:pdf OR ext:docx OR ext:xlsx) (confidential OR internal OR password)',["Internal documents indexed by search engines.","Dokumen dalaman yang diindeks enjin carian."],["Remove or protect the files, add authentication, and request removal from search results.","Buang atau lindungi fail, tambah pengesahan, dan mohon pembuangan dari hasil carian."]],
+["dir","Exposure","Medium","A05",'site:{d} intitle:"index of"',["Open directory listing shows every file in a folder.","Senarai direktori terbuka menunjukkan setiap fail dalam folder."],["Disable directory listing (Options -Indexes in Apache, autoindex off in Nginx).","Matikan senarai direktori (Options -Indexes pada Apache, autoindex off pada Nginx)."]],
+["php","Exposure","Medium","A05",'site:{d} ext:php intitle:phpinfo',["phpinfo pages reveal server versions, paths and settings.","Halaman phpinfo mendedahkan versi pelayan, laluan dan tetapan."],["Delete phpinfo files from production.","Padam fail phpinfo dari produksi."]],
+["err","Exposure","Medium","A05",'site:{d} ("sql syntax" OR "stack trace" OR "Warning: mysqli" OR "Fatal error")',["Verbose errors leak code paths and database details, and can hint at SQL injection.","Ralat terperinci membocorkan laluan kod dan butiran pangkalan data, dan boleh membayangkan SQL injection."],["Turn off debug output in production and show generic error pages.","Matikan output debug dalam produksi dan papar halaman ralat umum."]],
+["sub","Exposure","Info","A05",'site:*.{d} -www',["Lists indexed subdomains to map your attack surface.","Senarai subdomain yang diindeks untuk memetakan permukaan serangan anda."],["Decommission unused subdomains and fix dangling DNS records.","Hentikan subdomain tidak digunakan dan baiki rekod DNS yang tergantung."]],
+["login","Access","Low","A07",'site:{d} (inurl:login OR inurl:admin OR inurl:wp-admin OR inurl:signin)',["Finds login and admin panels that attackers target for brute force.","Mencari panel log masuk dan admin yang menjadi sasaran brute force."],["Enable MFA, rate limiting, and restrict admin pages by IP or VPN.","Aktifkan MFA, had kadar, dan hadkan halaman admin mengikut IP atau VPN."]],
+["paste","Leaks","Medium","A02",'site:pastebin.com "{d}"',["Paste sites sometimes hold leaked credentials or data mentioning your domain.","Laman paste kadangkala mengandungi kelayakan atau data bocor yang menyebut domain anda."],["Reset affected passwords, report the paste for removal, and monitor with breach alerts.","Tetapkan semula kata laluan terjejas, laporkan paste untuk dibuang, dan pantau dengan amaran kebocoran."]],
+["code","Leaks","High","A02",'site:github.com "{d}" (password OR secret OR api_key)',["Public repos may contain hard-coded secrets tied to your domain.","Repo awam mungkin mengandungi rahsia yang ditanam dalam kod berkaitan domain anda."],["Remove secrets from history, rotate keys, and enable GitHub secret scanning.","Buang rahsia dari sejarah, tukar kunci, dan aktifkan secret scanning GitHub."]],
+["s3","Leaks","High","A01",'site:s3.amazonaws.com "{d}"',["Public cloud storage buckets named after your organisation.","Baldi storan awan awam yang dinamakan sempena organisasi anda."],["Block public access on buckets and review bucket policies.","Sekat akses awam pada baldi dan semak dasar baldi."]]
 ];
+var RW={Critical:4,High:3,Medium:2,Low:1,Info:0};
+var $=function(i){return document.getElementById(i)};
+var lang="ms",dom="",cat="all",state={},custom=[];
 
-const catsDiv = document.getElementById('cats');
-CATEGORIES.forEach(c=>{
-  const lbl = document.createElement('label');
-  lbl.innerHTML = `<input type="checkbox" value="${c.id}" checked> ${c.label}`;
-  catsDiv.appendChild(lbl);
-});
-
-function esc(s){
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function t(k){return T[lang][k]||k}
+function applyLang(){
+  document.documentElement.lang=lang;
+  document.querySelectorAll("[data-i]").forEach(function(e){e.textContent=t(e.getAttribute("data-i"))});
+  if(!$("out").hidden)render();
 }
+function validDomain(s){return /^(?=.{4,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,24}$/.test(s)}
+function cleanDomain(s){return s.trim().toLowerCase().replace(/^https?:\/\//,"").replace(/^www\./,"").replace(/[\/?#].*$/,"")}
+function url(q){var e=$("eng").value,b=e==="b"?"https://www.bing.com/search?q=":e==="d"?"https://duckduckgo.com/?q=":"https://www.google.com/search?q=";return b+encodeURIComponent(q)}
+function items(){
+  var a=D.map(function(d){return{id:d[0],cat:d[1],risk:d[2],owasp:d[3],q:d[4],desc:d[5],fix:d[6]}});
+  custom.forEach(function(c,i){a.push({id:"c"+i,cat:"Custom",risk:"Info",owasp:"-",q:c,desc:["Custom dork","Dork tersuai"],fix:["Review results and apply the matching fix.","Semak hasil dan laksanakan pembaikan yang sesuai."]})});
+  return a;
+}
+function mk(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
 
-function generate(){
-  const domainRaw = document.getElementById('domain').value.trim();
-  const results = document.getElementById('results');
-  if(!domainRaw){
-    results.innerHTML = '<div class="empty">Sila masukkan domain dahulu (cth: contoh.com).</div>';
-    return;
-  }
-  const domain = domainRaw.replace(/^https?:\/\//,'').replace(/\/.*$/,'');
-  const checked = Array.from(document.querySelectorAll('.cats input:checked')).map(i=>i.value);
-
-  let html = '';
-  CATEGORIES.filter(c=>checked.includes(c.id)).forEach(cat=>{
-    html += `<div class="group"><h2>${esc(cat.label)}</h2>`;
-    cat.items.forEach(([frag, why])=>{
-      const query = `site:${domain} ${frag}`;
-      const qEsc = esc(query);
-      html += `
-        <div class="card">
-          <div style="flex:1">
-            <code>${qEsc}<span class="why">${esc(why)}</span></code>
-          </div>
-          <div class="btns">
-            <button class="iconbtn" onclick="copyQuery(this)" data-q="${qEsc}">Salin</button>
-            <a class="iconbtn open" href="https://www.google.com/search?q=${encodeURIComponent(query)}" target="_blank" rel="noopener noreferrer">Buka</a>
-          </div>
-        </div>`;
-    });
-    html += `</div>`;
+function render(){
+  var all=items(),L=lang==="ms"?1:0;
+  var cats=["all"].concat(Array.from(new Set(all.map(function(x){return x.cat}))));
+  var cw=$("cats");cw.textContent="";
+  cats.forEach(function(c){var b=mk("button",null,c==="all"?t("all"):c);b.type="button";b.setAttribute("aria-pressed",String(c===cat));b.onclick=function(){cat=c;render()};cw.appendChild(b)});
+  var lw=$("list");lw.textContent="";
+  var checked=0,exposed=0,pts=0,max=0;
+  all.forEach(function(x){
+    var s=(state[x.id]||{}).s||"0";max+=RW[x.risk]+1;
+    if(s!=="0")checked++;if(s==="2"){exposed++;pts+=RW[x.risk]+1}
+    if(cat!=="all"&&x.cat!==cat)return;
+    var q=x.q.split("{d}").join(dom);
+    var c=mk("div","card"+(s!=="0"?" done":""));
+    var h=mk("div");var tg=mk("span","tag "+x.risk,x.risk);h.appendChild(tg);
+    h.appendChild(mk("span","mut","OWASP "+x.owasp+" - "+x.cat));c.appendChild(h);
+    c.appendChild(mk("p",null,x.desc[L]));
+    c.appendChild(mk("div","q",q));
+    var bt=mk("div","btns");
+    var cp=mk("button",null,t("copy"));cp.type="button";
+    cp.onclick=function(){var done=function(){cp.textContent=t("copied");setTimeout(function(){cp.textContent=t("copy")},1200)};
+      if(navigator.clipboard)navigator.clipboard.writeText(q).then(done,function(){});};
+    var op=mk("button","p",t("open"));op.type="button";
+    op.onclick=function(){window.open(url(q),"_blank","noopener,noreferrer")};
+    bt.appendChild(cp);bt.appendChild(op);c.appendChild(bt);
+    var dt=mk("details");dt.appendChild(mk("summary",null,t("why")));
+    dt.appendChild(mk("p",null,t("fix")+": "+x.fix[L]));
+    var sel=mk("select");sel.setAttribute("aria-label",t("status"));
+    [["0","s0"],["1","s1"],["2","s2"]].forEach(function(o){var op2=mk("option",null,t(o[1]));op2.value=o[0];if(o[0]===s)op2.selected=true;sel.appendChild(op2)});
+    sel.onchange=function(){(state[x.id]=state[x.id]||{}).s=sel.value;render()};
+    var nt=mk("textarea");nt.rows=2;nt.placeholder=t("note");nt.value=(state[x.id]||{}).n||"";nt.maxLength=500;
+    nt.oninput=function(){(state[x.id]=state[x.id]||{}).n=nt.value};
+    dt.appendChild(sel);dt.appendChild(nt);c.appendChild(dt);lw.appendChild(c);
   });
-
-  results.innerHTML = html || '<div class="empty">Pilih sekurang-kurangnya satu kategori.</div>';
+  var sc=max?Math.round(pts/max*100):0;
+  var sm=$("sum");sm.textContent="";
+  [[t("tot"),all.length],[t("chk"),checked],[t("exposed"),exposed],[t("score"),sc+"%"]].forEach(function(p){var d=mk("div");d.appendChild(mk("b",null,String(p[1])));d.appendChild(mk("span","mut",p[0]));sm.appendChild(d)});
 }
 
-function copyQuery(btn){
-  const q = btn.getAttribute('data-q');
-  const ta = document.createElement('textarea');
-  ta.value = q.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>');
-  document.body.appendChild(ta);
-  ta.select();
-  try{ document.execCommand('copy'); }catch(e){}
-  document.body.removeChild(ta);
-  const old = btn.textContent;
-  btn.textContent = 'Disalin!';
-  setTimeout(()=>btn.textContent = old, 1200);
+function report(){
+  var all=items(),L=lang==="ms"?1:0,sn=[t("s0"),t("s1"),t("s2")];
+  var o=["# Exposure Self-Check Report","","- Domain: "+dom,"- Date: "+new Date().toISOString().slice(0,10),"- Tool: Dork Finder (FYP, Cybersecurity)","- "+t("score")+": "+$("sum").lastChild.firstChild.textContent,"","| Risk | OWASP | Check | Status | Notes |","|---|---|---|---|---|"];
+  all.forEach(function(x){var st=state[x.id]||{};
+    o.push("| "+x.risk+" | "+x.owasp+" | "+x.desc[L].replace(/\|/g,"/")+" | "+sn[+(st.s||0)]+" | "+(st.n||"").replace(/[|\r\n]+/g," ")+" |")});
+  o.push("","## Remediation for exposed items","");
+  var any=false;all.forEach(function(x){if((state[x.id]||{}).s==="2"){any=true;o.push("- ["+x.risk+"] "+x.desc[L]+" -> "+x.fix[L])}});
+  if(!any)o.push("- None marked exposed.");
+  o.push("","_Run only on domains you own or have written permission to test._");
+  var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([o.join("\n")],{type:"text/markdown"}));
+  a.download="dork-report-"+dom+".md";document.body.appendChild(a);a.click();a.remove();
 }
 
-document.getElementById('domain').addEventListener('keydown', e=>{
-  if(e.key === 'Enter') generate();
-});
+$("go").onclick=function(){
+  var d=cleanDomain($("dom").value);
+  if(!validDomain(d)){$("err").textContent=t("eDom");return}
+  if(!$("auth").checked){$("err").textContent=t("eAuth");return}
+  $("err").textContent="";dom=d;$("out").hidden=false;render();$("out").scrollIntoView({behavior:"smooth"});
+};
+$("cadd").onclick=function(){
+  var v=$("cq").value.trim();
+  if(v.indexOf("{d}")<0||v.length>200){$("err").textContent=t("eC");return}
+  $("err").textContent="";custom.push(v);$("cq").value="";
+  try{localStorage.setItem("df_custom",JSON.stringify(custom))}catch(e){}
+  render();
+};
+$("exp").onclick=report;
+$("reset").onclick=function(){state={};render()};
+$("lang").onclick=function(){lang=lang==="ms"?"en":"ms";applyLang()};
+try{var s=JSON.parse(localStorage.getItem("df_custom")||"[]");if(Array.isArray(s))custom=s.filter(function(x){return typeof x==="string"&&x.length<=200}).slice(0,20)}catch(e){}
+applyLang();
+})();
 </script>
 </body>
 </html>
