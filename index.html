@@ -1,220 +1,500 @@
 <!DOCTYPE html>
-<html lang="ms">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
-<meta name="referrer" content="no-referrer">
-<title>Dork Finder - Exposure Self-Check</title>
+<title>Site Exposure Audit</title>
 <style>
-:root{--bg:#f6f7f5;--card:#fff;--ink:#17201d;--mut:#5b6761;--line:#d9dfdb;--acc:#0b6e5c;--accfg:#fff;--crit:#a3123a;--high:#b4470a;--med:#8a6d00;--low:#2c6aa0;--info:#5b6761}
-@media(prefers-color-scheme:dark){:root{--bg:#101614;--card:#18211e;--ink:#e6ece9;--mut:#9aa8a1;--line:#2c3834;--acc:#4cc2a8;--accfg:#06241d;--crit:#ff7a9c;--high:#ffa066;--med:#e8c34a;--low:#7db8ee;--info:#9aa8a1}}
+:root{--bg:#fff;--surf:#f0f4f9;--ink:#1f1f1f;--mut:#5f6368;--acc:#0b57d0;--line:#e1e5ea;--warn:#b3261e;--warnbg:#fce8e6}
+@media (prefers-color-scheme:dark){:root{--bg:#131314;--surf:#1e1f20;--ink:#e3e3e3;--mut:#9aa0a6;--acc:#a8c7fa;--line:#2d2f31;--warn:#f2b8b5;--warnbg:#3a2224}}
 *{box-sizing:border-box}
-html{padding-top:env(safe-area-inset-top,0);padding-bottom:env(safe-area-inset-bottom,0)}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-main{max-width:760px;margin:0 auto;padding:20px 16px 60px}
-h1{font-size:2rem;margin:.2em 0 .3em;letter-spacing:-.02em}
-h2{font-size:1.15rem;margin:1.6em 0 .6em}
-p{margin:.4em 0;max-width:68ch}
-.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.mut{color:var(--mut);font-size:.9rem}
-button,select,input,textarea{font:inherit;color:inherit}
-button{cursor:pointer;border:1px solid var(--line);background:var(--card);border-radius:8px;padding:8px 12px}
-button.p{background:var(--acc);color:var(--accfg);border-color:var(--acc);font-weight:600}
-button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
-input[type=text],select,textarea{width:100%;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:9px 11px}
-.row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
-.row>*{flex:1 1 140px}
-.warn{border-left:4px solid var(--high);background:var(--card);padding:10px 12px;border-radius:0 8px 8px 0;font-size:.92rem}
-.err{color:var(--crit);font-size:.9rem;min-height:1.3em}
-.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
-.sum div{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
-.sum b{display:block;font-size:1.4rem}
-.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;margin:10px 0}
-.card.done{opacity:.8}
-.q{font:.85rem/1.4 ui-monospace,Consolas,monospace;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px;word-break:break-all;margin:8px 0}
-.tag{display:inline-block;font-size:.78rem;font-weight:700;padding:1px 8px;border-radius:99px;border:1.5px solid currentColor;margin-right:6px}
-.Critical{color:var(--crit)}.High{color:var(--high)}.Medium{color:var(--med)}.Low{color:var(--low)}.Info{color:var(--info)}
-.btns{display:flex;gap:6px;flex-wrap:wrap}
-details{margin-top:8px}summary{cursor:pointer;color:var(--acc);font-weight:600}
-.cat{display:flex;gap:6px;flex-wrap:wrap}
-.cat button[aria-pressed=true]{background:var(--acc);color:var(--accfg);border-color:var(--acc)}
-footer{margin-top:40px;font-size:.85rem;color:var(--mut)}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 "Google Sans","Segoe UI",system-ui,sans-serif;display:flex;flex-direction:column}
+header{padding:14px 20px;padding-top:calc(14px + env(safe-area-inset-top,0px));display:flex;align-items:center;gap:10px}
+header h1{font-size:18px;font-weight:500;margin:0}
+.dom{margin-left:auto;display:none;gap:6px;align-items:center;font-size:13px;color:var(--mut)}
+.dom code{background:var(--surf);padding:3px 8px;border-radius:8px;color:var(--ink)}
+.dom button{border:0;background:none;color:var(--acc);cursor:pointer;font-size:13px;padding:2px 4px}
+#wrap{flex:1;display:flex;flex-direction:column;min-height:0}
+#gateCenter{margin:auto;max-width:480px;padding:0 20px;text-align:center}
+#gateCenter h2{font-size:28px;margin:0 0 8px}
+#gateCenter p{color:var(--mut);margin:0 0 22px;font-size:14px}
+.domBox{display:flex;align-items:center;gap:8px;background:var(--surf);border-radius:16px;border:1px solid var(--line);padding:6px 6px 6px 18px}
+.domBox:focus-within{border-color:var(--acc)}
+#domInput{flex:1;width:100%;padding:12px 0;border:0;background:transparent;color:var(--ink);font-size:17px;outline:none}
+button.go{border:0;background:var(--acc);color:#fff;width:40px;height:40px;border-radius:50%;font-size:18px;cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:filter .15s}
+button.go:hover:not(:disabled){filter:brightness(1.08)}
+button.go:disabled{background:var(--bg);color:var(--mut);box-shadow:none;cursor:default;opacity:1}
+.ack{display:flex;gap:8px;align-items:flex-start;text-align:left;margin:16px 2px;font-size:13px;color:var(--mut)}
+.keys{margin-top:10px;display:flex;flex-direction:column;gap:8px}.keys input{width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surf);color:var(--ink);font-size:14px;outline:none}.keys input:focus{border-color:var(--acc)}
+details{font-size:13px;color:var(--mut)}details summary{cursor:pointer}details li{margin:2px 0;overflow-wrap:anywhere}
+.hint{color:var(--mut);font-size:12px;margin-top:10px;min-height:16px}
+#chat{flex:1;overflow-y:auto;padding:8px 16px 16px;max-width:820px;width:100%;margin:0 auto;display:none}
+.msg{margin:14px 0;display:flex}
+.msg.u{justify-content:flex-end}
+.b{max-width:88%;padding:10px 16px;border-radius:20px;overflow-wrap:anywhere}
+.u .b{background:var(--surf);border-bottom-right-radius:6px;font:14px ui-monospace,Menlo,monospace}
+.a .b{max-width:100%;padding:4px 0}
+.b p{margin:0 0 10px}.b ul,.b ol{margin:0 0 10px;padding-left:22px}
+.b code{background:var(--surf);padding:1px 6px;border-radius:6px;font-size:.9em}
+.b a{color:var(--acc)}
+.src{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.src a{background:var(--surf);border-radius:10px;padding:4px 10px;font-size:12px;color:var(--mut);text-decoration:none;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat{color:var(--mut);font-size:14px;animation:p 1.2s infinite}
+@keyframes p{50%{opacity:.4}}
+form{max-width:820px;width:100%;margin:0 auto;padding:8px 16px calc(14px + env(safe-area-inset-bottom,0px));display:none}
+.box{display:flex;align-items:flex-end;gap:8px;background:var(--surf);border-radius:28px;padding:8px 8px 8px 20px}
+textarea{flex:1;border:0;background:transparent;color:var(--ink);font:13px ui-monospace,Menlo,monospace;resize:none;outline:none;max-height:160px;padding:8px 0}
+button.s{border:0;background:var(--acc);color:#fff;width:40px;height:40px;border-radius:50%;font-size:18px;cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:filter .15s}
+button.s:hover:not(:disabled){filter:brightness(1.08)}
+button.s:disabled{background:var(--surf);color:var(--mut);box-shadow:none;cursor:default;opacity:1}
+.lim{background:var(--surf);border:1px solid var(--line);border-radius:18px;padding:16px 18px;max-width:420px}
+.lim h3{margin:0 0 4px;font-size:16px;font-weight:500}
+.lim .why{margin:0 0 12px;font-size:14px;color:var(--mut)}
+.lim .cd{font-size:30px;font-weight:500;color:var(--acc);line-height:1.1;font-variant-numeric:tabular-nums}
+.lim .at{font-size:13px;color:var(--mut);margin:4px 0 14px}
+.lim .bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin:0 0 12px}
+.lim .bar i{display:block;height:100%;width:0;background:var(--acc);transition:width 1s linear}
+.lim button{border:0;background:var(--acc);color:#fff;border-radius:20px;padding:9px 18px;font-size:14px;cursor:pointer}
+.lim button:disabled{background:var(--bg);color:var(--mut);cursor:default}
+.lim .ok{color:var(--acc)}
+.use{margin-top:4px}.use a{color:var(--acc)}
+.note{text-align:center;color:var(--mut);font-size:11px;margin-top:6px}
+#hamburger{border:0;background:none;color:var(--ink);cursor:pointer;padding:6px;margin:-6px;border-radius:8px;flex:none}
+#hamburger:hover{background:var(--surf)}
+#hamburger svg{display:block}
+#overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:19;opacity:0;pointer-events:none;transition:opacity .2s}
+#overlay.open{opacity:1;pointer-events:auto}
+#sidebar{position:fixed;top:0;left:0;bottom:0;width:280px;max-width:84vw;background:var(--bg);border-right:1px solid var(--line);z-index:20;
+  transform:translateX(-100%);transition:transform .22s ease;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+#sidebar.open{transform:translateX(0)}
+.sbHead{padding:16px 14px 10px}
+.sbNew{display:flex;align-items:center;gap:8px;width:100%;border:1px solid var(--line);background:var(--surf);color:var(--ink);border-radius:20px;padding:10px 14px;font-size:14px;cursor:pointer}
+.sbNew:hover{filter:brightness(1.05)}
+.sbLabel{color:var(--mut);font-size:12px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;margin:14px 14px 4px}
+#recents{flex:1;overflow-y:auto;padding:0 8px 12px}
+.rItem{display:flex;flex-direction:column;gap:1px;padding:9px 10px;border-radius:12px;cursor:pointer;margin:1px 0}
+.rItem:hover{background:var(--surf)}
+.rItem.active{background:var(--surf)}
+.rItem .rDom{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rItem .rMeta{font-size:11px;color:var(--mut)}
+.rEmpty{color:var(--mut);font-size:13px;padding:10px 14px}
 </style>
 </head>
 <body>
-<main>
-<div class="top"><span class="mut">Exposure self-check</span><button id="lang" type="button" aria-label="Language">EN / BM</button></div>
-<h1>Dork Finder</h1>
-<p data-i="intro"></p>
-<p class="warn" data-i="warn"></p>
-
-<h2 data-i="h_target"></h2>
-<label for="dom" class="mut" data-i="dom"></label>
-<input id="dom" type="text" inputmode="url" autocomplete="off" placeholder="example.com">
-<div class="row">
-  <select id="eng" aria-label="Search engine"><option value="g">Google</option><option value="b">Bing</option><option value="d">DuckDuckGo</option></select>
+<div id="overlay"></div>
+<div id="sidebar">
+  <div class="sbHead">
+    <button class="sbNew" id="sbNewBtn">+ New audit</button>
+  </div>
+  <div class="sbLabel">Recents</div>
+  <div id="recents"></div>
 </div>
-<label class="mut"><input type="checkbox" id="auth"> <span data-i="auth"></span></label>
-<div class="err" id="err" role="alert"></div>
-<button class="p" id="go" type="button" data-i="gen"></button>
-
-<section id="out" hidden>
-  <h2 data-i="h_sum"></h2>
-  <div class="sum" id="sum"></div>
-  <div class="row"><button id="exp" type="button" class="p" data-i="exp"></button><button id="reset" type="button" data-i="reset"></button><button id="imp" type="button" data-i="imp"></button><input id="impf" type="file" accept=".json,application/json" hidden></div>
-  <h2 data-i="h_list"></h2>
-  <div class="cat" id="cats"></div>
-  <div id="list"></div>
-  <h2 data-i="h_custom"></h2>
-  <div class="row"><input id="cq" type="text" placeholder='intitle:"admin" {d}' aria-label="Custom dork"><button id="cadd" type="button" data-i="add"></button></div>
-  <p class="mut" data-i="chint"></p>
-</section>
-
-<footer data-i="foot"></footer>
-</main>
+<header>
+  <button id="hamburger" aria-label="Recents"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+  <h1>🔎 Site Exposure Audit</h1>
+  <div class="dom" id="domBar">scoped to <code id="domLabel"></code><button id="changeDom">change</button></div>
+</header>
+<div id="wrap">
+  <div id="gateCenter">
+    <h2>Site Exposure Audit</h2>
+    <p>Type a domain, press Enter. Runs a full Google-dorking exposure scan (open files, directories, backups, .git, admin panels) and returns a conversational report of what's actually publicly indexed. Use only on a domain you own or are authorized to test.</p>
+    <div class="domBox">
+      <input id="domInput" placeholder="yourdomain.com" autofocus>
+      <button class="go" id="domGo" type="button" aria-label="Start audit" disabled>↑</button>
+    </div>
+    <label class="ack"><input type="checkbox" id="ack"> I own this domain, or have written authorization to test it.</label>
+    <div class="keys"><input id="serperKey" type="password" placeholder="Serper API key (required)" autocomplete="off"><input id="anthKey" type="password" placeholder="Anthropic API key (optional, for the AI report)" autocomplete="off"></div>
+    <div class="hint" id="hint">Keys are stored only in this browser.</div>
+  </div>
+  <div id="chat"></div>
+</div>
+<form id="f">
+  <div class="box">
+    <textarea id="q" rows="1" placeholder="Ask a follow-up about this domain…"></textarea>
+    <button class="s" id="go" type="submit" aria-label="Send">↑</button>
+  </div>
+  <div class="note">Scoped to the declared, authorized domain only. Results reflect what's publicly indexed — verify and remediate directly.</div>
+  <div class="note use" id="usage"><a href="https://claude.ai/settings/usage" target="_blank" rel="noopener noreferrer">Check your usage</a></div>
+</form>
 
 <script>
-(function(){
-"use strict";
-var T={
-ms:{intro:"Alat semakan pendedahan untuk domain anda sendiri. Ia membina query carian awam (dork) untuk mencari fail terdedah, direktori terbuka, panel log masuk dan kebocoran lain, kemudian menunjukkan risiko, kategori OWASP dan cara membaikinya.",
-warn:"Guna hanya ke atas domain milik anda atau yang anda ada kebenaran bertulis untuk diuji. Akses tanpa kebenaran adalah kesalahan di bawah Akta Jenayah Komputer 1997. Alat ini hanya membina query; ia tidak mengimbas sistem.",
-h_target:"Sasaran",dom:"Domain anda",auth:"Saya memiliki domain ini atau ada kebenaran bertulis.",gen:"Jana dork",
-h_sum:"Ringkasan",imp:"Import hasil pengimbas (.json)",impe:"Fail JSON tidak sah.",impd:"Domain dalam fail tidak sepadan dengan sasaran.",exp:"Eksport laporan (.md)",reset:"Set semula",h_list:"Senarai dork",h_custom:"Dork tersuai",add:"Tambah",
-chint:"Guna {d} sebagai tempat domain. Disimpan dalam pelayar anda sahaja.",
-all:"Semua",copy:"Salin",open:"Buka",copied:"Disalin",risk:"Risiko",why:"Kenapa penting & cara baiki",fix:"Pembaikan",status:"Status",note:"Nota",
-s0:"Belum disemak",s1:"Selamat",s2:"Terdedah",tot:"Jumlah",chk:"Disemak",exposed:"Terdedah",score:"Skor risiko",
-eDom:"Domain tidak sah. Contoh: example.com",eAuth:"Sila sahkan anda ada kebenaran.",eC:"Dork mesti mengandungi {d} dan tidak lebih 200 aksara.",
-foot:"Projek Tahun Akhir - Keselamatan Siber. Tiada data dihantar ke mana-mana pelayan; semua diproses dalam pelayar anda."},
-en:{intro:"An exposure self-check for your own domain. It builds public search queries (dorks) that look for exposed files, open directories, login panels and other leaks, then shows the risk, OWASP category and how to fix each one.",
-warn:"Use only on domains you own or have written permission to test. Unauthorised access is an offence under Malaysia's Computer Crimes Act 1997. This tool only builds queries; it does not scan any system.",
-h_target:"Target",dom:"Your domain",auth:"I own this domain or have written permission.",gen:"Generate dorks",
-h_sum:"Summary",imp:"Import scanner results (.json)",impe:"Invalid JSON file.",impd:"Domain in the file does not match the target.",exp:"Export report (.md)",reset:"Reset",h_list:"Dork library",h_custom:"Custom dorks",add:"Add",
-chint:"Use {d} where the domain goes. Saved in your browser only.",
-all:"All",copy:"Copy",open:"Open",copied:"Copied",risk:"Risk",why:"Why it matters and how to fix",fix:"Fix",status:"Status",note:"Notes",
-s0:"Not checked",s1:"Clean",s2:"Exposed",tot:"Total",chk:"Checked",exposed:"Exposed",score:"Risk score",
-eDom:"Invalid domain. Example: example.com",eAuth:"Please confirm you have permission.",eC:"Dork must contain {d} and be under 200 characters.",
-foot:"Final Year Project, Cybersecurity. No data is sent to any server; everything runs in your browser."}
-};
-// id, category, risk, OWASP 2021, query, [desc en, desc ms], [fix en, fix ms]
-var D=[
-["env","Files","Critical","A05",'site:{d} ext:env OR ext:ini OR ext:conf OR ext:cfg',["Configuration files that may hold keys, passwords or database settings.","Fail konfigurasi yang mungkin mengandungi kunci, kata laluan atau tetapan pangkalan data."],["Move config outside the web root, block these extensions in the server, and rotate any exposed secrets.","Alihkan config keluar dari web root, sekat sambungan ini pada pelayan, dan tukar rahsia yang terdedah."]],
-["sql","Files","Critical","A05",'site:{d} ext:sql OR ext:db OR ext:dump',["Database dumps can expose all user data.","Dump pangkalan data boleh mendedahkan semua data pengguna."],["Delete dumps from public folders, store backups offline or encrypted, restrict access.","Padam dump dari folder awam, simpan sandaran luar talian atau disulitkan, hadkan akses."]],
-["bak","Files","High","A05",'site:{d} ext:bak OR ext:old OR ext:backup OR ext:zip OR ext:tar',["Old backups can leak source code and credentials.","Sandaran lama boleh membocorkan kod sumber dan kelayakan."],["Remove backup files from the web server and use a separate backup location.","Buang fail sandaran dari pelayan web dan guna lokasi sandaran berasingan."]],
-["git","Files","High","A05",'site:{d} inurl:".git"',["An exposed .git folder can reveal full source code history.","Folder .git yang terdedah boleh mendedahkan sejarah kod sumber penuh."],["Block /.git in the server config and never deploy the repo folder itself.","Sekat /.git dalam config pelayan dan jangan deploy folder repo itu sendiri."]],
-["log","Files","Medium","A05",'site:{d} ext:log',["Log files can contain usernames, IPs, tokens and internal paths.","Fail log boleh mengandungi nama pengguna, IP, token dan laluan dalaman."],["Store logs outside the web root and disable public access.","Simpan log di luar web root dan matikan akses awam."]],
-["docs","Files","Medium","A01",'site:{d} (ext:pdf OR ext:docx OR ext:xlsx) (confidential OR internal OR password)',["Internal documents indexed by search engines.","Dokumen dalaman yang diindeks enjin carian."],["Remove or protect the files, add authentication, and request removal from search results.","Buang atau lindungi fail, tambah pengesahan, dan mohon pembuangan dari hasil carian."]],
-["dir","Exposure","Medium","A05",'site:{d} intitle:"index of"',["Open directory listing shows every file in a folder.","Senarai direktori terbuka menunjukkan setiap fail dalam folder."],["Disable directory listing (Options -Indexes in Apache, autoindex off in Nginx).","Matikan senarai direktori (Options -Indexes pada Apache, autoindex off pada Nginx)."]],
-["php","Exposure","Medium","A05",'site:{d} ext:php intitle:phpinfo',["phpinfo pages reveal server versions, paths and settings.","Halaman phpinfo mendedahkan versi pelayan, laluan dan tetapan."],["Delete phpinfo files from production.","Padam fail phpinfo dari produksi."]],
-["err","Exposure","Medium","A05",'site:{d} ("sql syntax" OR "stack trace" OR "Warning: mysqli" OR "Fatal error")',["Verbose errors leak code paths and database details, and can hint at SQL injection.","Ralat terperinci membocorkan laluan kod dan butiran pangkalan data, dan boleh membayangkan SQL injection."],["Turn off debug output in production and show generic error pages.","Matikan output debug dalam produksi dan papar halaman ralat umum."]],
-["sub","Exposure","Info","A05",'site:*.{d} -www',["Lists indexed subdomains to map your attack surface.","Senarai subdomain yang diindeks untuk memetakan permukaan serangan anda."],["Decommission unused subdomains and fix dangling DNS records.","Hentikan subdomain tidak digunakan dan baiki rekod DNS yang tergantung."]],
-["login","Access","Low","A07",'site:{d} (inurl:login OR inurl:admin OR inurl:wp-admin OR inurl:signin)',["Finds login and admin panels that attackers target for brute force.","Mencari panel log masuk dan admin yang menjadi sasaran brute force."],["Enable MFA, rate limiting, and restrict admin pages by IP or VPN.","Aktifkan MFA, had kadar, dan hadkan halaman admin mengikut IP atau VPN."]],
-["paste","Leaks","Medium","A02",'site:pastebin.com "{d}"',["Paste sites sometimes hold leaked credentials or data mentioning your domain.","Laman paste kadangkala mengandungi kelayakan atau data bocor yang menyebut domain anda."],["Reset affected passwords, report the paste for removal, and monitor with breach alerts.","Tetapkan semula kata laluan terjejas, laporkan paste untuk dibuang, dan pantau dengan amaran kebocoran."]],
-["code","Leaks","High","A02",'site:github.com "{d}" (password OR secret OR api_key)',["Public repos may contain hard-coded secrets tied to your domain.","Repo awam mungkin mengandungi rahsia yang ditanam dalam kod berkaitan domain anda."],["Remove secrets from history, rotate keys, and enable GitHub secret scanning.","Buang rahsia dari sejarah, tukar kunci, dan aktifkan secret scanning GitHub."]],
-["s3","Leaks","High","A01",'site:s3.amazonaws.com "{d}"',["Public cloud storage buckets named after your organisation.","Baldi storan awan awam yang dinamakan sempena organisasi anda."],["Block public access on buckets and review bucket policies.","Sekat akses awam pada baldi dan semak dasar baldi."]],
-["key","Files","Critical","A02",'site:{d} (ext:pem OR ext:key OR ext:ppk OR "BEGIN RSA PRIVATE KEY")',["Private keys exposed on the web let attackers impersonate your servers or log in.","Kunci peribadi yang terdedah membolehkan penyerang menyamar pelayan anda atau log masuk."],["Delete the files, revoke and regenerate the keys, and audit access logs.","Padam fail, batalkan dan jana semula kunci, dan audit log akses."]],
-["dbpw","Leaks","Critical","A02",'site:{d} (intext:"DB_PASSWORD" OR intext:"db_password" OR intext:"mysql_connect")',["Indexed pages that print database credentials or connection code.","Halaman diindeks yang memaparkan kelayakan pangkalan data atau kod sambungan."],["Remove the content, rotate the credentials, and request cache removal from the search engine.","Buang kandungan, tukar kelayakan, dan mohon pembuangan cache dari enjin carian."]],
-["csv","Files","High","A01",'site:{d} (ext:csv OR ext:xls OR ext:xlsx) (email OR username OR password)',["Spreadsheets with user lists or credentials exposed publicly.","Hamparan dengan senarai pengguna atau kelayakan terdedah secara awam."],["Remove or protect the files, check for personal data (PDPA 2010), and notify affected users if needed.","Buang atau lindungi fail, semak data peribadi (PDPA 2010), dan maklumkan pengguna terjejas jika perlu."]],
-["pma","Access","High","A05",'site:{d} (inurl:phpmyadmin OR inurl:adminer OR inurl:pma)',["Public database admin tools are a direct path to your data.","Alat admin pangkalan data awam ialah laluan terus ke data anda."],["Restrict by IP or VPN, remove if unused, and use strong unique credentials with MFA where possible.","Hadkan mengikut IP atau VPN, buang jika tidak digunakan, dan guna kelayakan kukuh serta MFA jika boleh."]],
-["api","Exposure","Medium","A05",'site:{d} (inurl:swagger OR inurl:api-docs OR inurl:graphql)',["Public API documentation or GraphQL endpoints reveal your internal API surface.","Dokumentasi API awam atau endpoint GraphQL mendedahkan permukaan API dalaman anda."],["Require authentication for docs, disable introspection in production.","Wajibkan pengesahan untuk dokumentasi, matikan introspection dalam produksi."]]
+let DOMAIN = '';
+const domInput = document.getElementById('domInput'), ack = document.getElementById('ack'), hint = document.getElementById('hint'), domGo = document.getElementById('domGo');
+function clean(d){ return d.trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,''); }
+function validDomain(){ return /^[a-z0-9.-]+\.[a-z]{2,}$/.test(clean(domInput.value)); }
+const KEYS_STORE='dorkaudit:keys', getKey = id => document.getElementById(id).value.trim();
+try { const k = JSON.parse(localStorage.getItem(KEYS_STORE)||'{}'); document.getElementById('serperKey').value = k.s||''; document.getElementById('anthKey').value = k.a||''; } catch(_){}
+function saveKeys(){ try { localStorage.setItem(KEYS_STORE, JSON.stringify({s:getKey('serperKey'), a:getKey('anthKey')})); } catch(_){} }
+['serperKey','anthKey'].forEach(id => document.getElementById(id).addEventListener('input', () => { saveKeys(); syncGo(); }));
+function syncGo(){ domGo.disabled = !(validDomain() && ack.checked && getKey('serperKey')); }
+function tryStart(){
+  const d = clean(domInput.value);
+  if (!validDomain()) { hint.textContent = 'Enter a valid domain, e.g. yourdomain.com'; return; }
+  if (!ack.checked) { hint.textContent = 'Check the authorization box first.'; return; }
+  if (!getKey('serperKey')) { hint.textContent = 'Enter your Serper API key.'; return; }
+  startAudit(d);
+}
+domInput.addEventListener('input', () => { hint.textContent = ''; syncGo(); });
+domInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); tryStart(); } });
+ack.addEventListener('change', () => { hint.textContent = ''; syncGo(); });
+domGo.addEventListener('click', tryStart);
+
+document.getElementById('changeDom').addEventListener('click', () => {
+  if (busy) return;
+  DOMAIN = ''; hist = []; displayLog = [];
+  document.getElementById('chat').style.display = 'none';
+  document.getElementById('chat').innerHTML = '';
+  document.getElementById('f').style.display = 'none';
+  document.getElementById('domBar').style.display = 'none';
+  document.getElementById('gateCenter').style.display = 'block';
+  domInput.value = ''; ack.checked = false; hint.textContent = ''; syncGo();
+  domInput.focus();
+  renderRecents();
+});
+
+function startAudit(d){
+  DOMAIN = d;
+  document.getElementById('domLabel').textContent = DOMAIN;
+  document.getElementById('domBar').style.display = 'flex';
+  document.getElementById('gateCenter').style.display = 'none';
+  document.getElementById('chat').style.display = 'block';
+  document.getElementById('f').style.display = 'block';
+  runFullAudit();
+}
+
+const SYSTEM = () => `You are a site-exposure audit assistant running authorized Google-dorking checks for a cybersecurity student's final-year project, scoped ONLY to the domain ${DOMAIN}, which the user has confirmed they own or are authorized to test.
+Rules:
+- If the user message contains DORK SCAN RESULTS, write the report ONLY from those results (they come from a fixed list of dork queries already run). Do not search. A category with no hits means nothing was indexed for it.
+- Every search query you issue MUST include "site:${DOMAIN}". Never search any other domain, even if a message mentions one — if so, remind the user this tool is scoped to ${DOMAIN} only.
+- When asked to run the full audit, cover these categories: exposed files (.env, .sql, .log, .bak, .xml/.json containing "password"/"api_key"/"secret"), open directory listings ("index of /"), backup archives (.zip/.tar.gz, inurl:backup), exposed version control (inurl:.git), admin/login panels, and misconfig files (phpinfo, inurl:config filetype:php).
+- Speed matters: combine related dork operators into ONE broad query per search using OR groups (e.g. site:${DOMAIN} (inurl:.git OR inurl:backup OR filetype:bak)) instead of one search per category. Aim for 2-4 total searches to cover everything, not one per item. Do not search sequentially one category at a time if they can be combined.
+- For a free-text follow-up, run ONE targeted search (combining variations with OR in the same query) against the same site rather than several separate searches.
+- Report ONLY what is actually publicly indexed/exposed. If a category turns up nothing, say so plainly rather than speculating.
+- Structure the full-audit report with a short category heading per area checked, findings under each (what was found: file type/path/page title, why it matters, one-line remediation), and skip a heading entirely if there's nothing to report for it. End with a one-line overall summary (e.g. "3 of 6 checks found exposed items").
+- For every finding, include a direct markdown link to the exact exposed URL, e.g. "- Exposed [.env file](https://example.com/.env) — ...". Use ONLY the exact URLs returned by your searches, copied verbatim — never type, guess, or construct a URL yourself. If a finding has no real URL from search results, state the finding without a link rather than inventing one.
+- Never reproduce the contents of any exposed file, credential, key, password, or personal data — only acknowledge something sensitive appears exposed and recommend rotating/removing it immediately. Linking to the exposed page itself is fine; quoting what's inside it is not.
+- Tone: concise, factual pentest-report style. No alarmism, no speculation beyond what search actually returned.`;
+
+const chat = document.getElementById('chat'), qEl = document.getElementById('q'), goSend = document.getElementById('go');
+let hist = [], displayLog = [], busy = false;
+const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function md(t){
+  let h = esc(t);
+  h = h.replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+       .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  return h.split(/\n{2,}/).map(p => {
+    const lines = p.split('\n');
+    if (lines.every(l => /^\s*[-*] /.test(l))) return '<ul>' + lines.map(l => '<li>' + l.replace(/^\s*[-*] /,'') + '</li>').join('') + '</ul>';
+    if (lines.every(l => /^\s*\d+\. /.test(l))) return '<ol>' + lines.map(l => '<li>' + l.replace(/^\s*\d+\. /,'') + '</li>').join('') + '</ol>';
+    if (/^#{1,3}\s/.test(lines[0])) return '<p><strong>' + lines[0].replace(/^#{1,3}\s/,'') + '</strong>' + (lines.length>1 ? '<br>'+lines.slice(1).join('<br>') : '') + '</p>';
+    return '<p>' + lines.join('<br>') + '</p>';
+  }).join('');
+}
+function add(role, html){
+  const m = document.createElement('div'); m.className = 'msg ' + role;
+  const b = document.createElement('div'); b.className = 'b'; b.innerHTML = html;
+  m.appendChild(b); chat.appendChild(m); chat.scrollTop = chat.scrollHeight; return b;
+}
+function logMsg(role, html){ const b = add(role, html); displayLog.push({role, html}); return b; }
+
+const STORE_PREFIX = 'dorkaudit:session:';
+function allSessions(){
+  const out = [];
+  try {
+    for (let i = 0; i < localStorage.length; i++){
+      const k = localStorage.key(i);
+      if (k && k.indexOf(STORE_PREFIX) === 0){
+        try { out.push(JSON.parse(localStorage.getItem(k))); } catch(_){}
+      }
+    }
+  } catch(_){}
+  return out.sort((a,b) => b.updated - a.updated);
+}
+function saveSession(){
+  if (!DOMAIN) return;
+  try { localStorage.setItem(STORE_PREFIX + DOMAIN, JSON.stringify({ domain: DOMAIN, hist, displayLog, updated: Date.now() })); } catch(_){}
+  renderRecents();
+}
+function agoText(ts){
+  const s = Math.max(1, Math.round((Date.now() - ts) / 1000));
+  if (s < 60) return 'just now';
+  const m = Math.round(s / 60); if (m < 60) return m + 'm ago';
+  const h = Math.round(m / 60); if (h < 24) return h + 'h ago';
+  const d = Math.round(h / 24); if (d < 7) return d + 'd ago';
+  return new Date(ts).toLocaleDateString();
+}
+function openSession(d){
+  if (busy) return;
+  const raw = localStorage.getItem(STORE_PREFIX + d);
+  if (!raw) return;
+  let s; try { s = JSON.parse(raw); } catch(_) { return; }
+  DOMAIN = s.domain; hist = s.hist || []; displayLog = [];
+  document.getElementById('domLabel').textContent = DOMAIN;
+  document.getElementById('domBar').style.display = 'flex';
+  document.getElementById('gateCenter').style.display = 'none';
+  chat.innerHTML = '';
+  (s.displayLog || []).forEach(m => logMsg(m.role, m.html));
+  document.getElementById('chat').style.display = 'block';
+  document.getElementById('f').style.display = 'block';
+  closeSidebar();
+  renderRecents();
+  chat.scrollTop = chat.scrollHeight;
+}
+function renderRecents(){
+  const wrap = document.getElementById('recents');
+  const sessions = allSessions();
+  if (!sessions.length) { wrap.innerHTML = '<div class="rEmpty">No audits yet</div>'; return; }
+  wrap.innerHTML = sessions.map(s => {
+    const active = s.domain === DOMAIN ? ' active' : '';
+    return '<div class="rItem' + active + '" data-domain="' + esc(s.domain) + '"><div class="rDom">' + esc(s.domain) + '</div><div class="rMeta">' + esc(agoText(s.updated)) + '</div></div>';
+  }).join('');
+  wrap.querySelectorAll('.rItem').forEach(el => el.addEventListener('click', () => openSession(el.dataset.domain)));
+}
+function openSidebar(){ document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('open'); renderRecents(); }
+function closeSidebar(){ document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); }
+document.getElementById('hamburger').addEventListener('click', () => {
+  const sb = document.getElementById('sidebar');
+  sb.classList.contains('open') ? closeSidebar() : openSidebar();
+});
+document.getElementById('overlay').addEventListener('click', closeSidebar);
+document.getElementById('sbNewBtn').addEventListener('click', () => {
+  closeSidebar();
+  document.getElementById('changeDom').click();
+});
+renderRecents();
+
+let limitUntil = 0, lastReq = null;
+const DEFAULT_PH = qEl.placeholder;
+function fmtLeft(ms){
+  const s = Math.max(0, Math.ceil(ms/1000));
+  if (s < 60) return s + ' sec';
+  const m = Math.floor(s/60);
+  if (m < 60) return m + ' min ' + String(s%60).padStart(2,'0') + ' sec';
+  const h = Math.floor(m/60);
+  return h + ' hr ' + (m%60) + ' min';
+}
+function fmtClock(ts){
+  const d = new Date(ts), now = new Date();
+  const t = d.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+  if (d.toDateString() === now.toDateString()) return 'today at ' + t;
+  return d.toLocaleDateString([], {weekday:'short'}) + ' at ' + t;
+}
+function parseWaitSecs(r, msg){
+  const ra = r && r.headers && r.headers.get && r.headers.get('retry-after');
+  if (ra) {
+    if (/^\d+$/.test(ra)) return +ra;
+    const t = Date.parse(ra); if (!isNaN(t)) return Math.max(1, (t - Date.now())/1000);
+  }
+  const iso = (msg||'').match(/\d{4}-\d\d-\d\dT[\d:.]+(?:Z|[+-]\d\d:\d\d)?/);
+  if (iso) { const t = Date.parse(iso[0]); if (!isNaN(t) && t > Date.now()) return (t - Date.now())/1000; }
+  const m = (msg||'').match(/in\s+(\d+(?:\.\d+)?)\s*(second|sec|minute|min|hour|hr|day)s?/i);
+  if (m) {
+    const n = +m[1], u = m[2].toLowerCase();
+    return n * (u.startsWith('s') ? 1 : u.startsWith('m') ? 60 : u.startsWith('h') ? 3600 : 86400);
+  }
+  return null;
+}
+function isLimitErr(status, type, msg){
+  return status === 429 || type === 'rate_limit_error' || /usage limit|rate limit|quota|limit (has been )?reached|exceeded|too many requests/i.test(msg||'');
+}
+function setLocked(until){
+  limitUntil = until || 0;
+  const locked = limitUntil > Date.now();
+  goSend.disabled = busy || locked;
+  qEl.placeholder = locked ? 'Usage limit reached — available again ' + fmtClock(limitUntil) : DEFAULT_PH;
+}
+function showLimit(out, secs, req){
+  const known = secs != null && isFinite(secs);
+  const total = known ? Math.max(1, secs) * 1000 : 0;
+  const until = known ? Date.now() + total : 0;
+  out.innerHTML = '';
+  const c = document.createElement('div'); c.className = 'lim';
+  c.innerHTML = '<h3>⏳ Usage limit reached</h3>' +
+    '<p class="why">You\u2019ve used up the available requests for now. Nothing is broken \u2014 it unlocks by itself.</p>' +
+    (known
+      ? '<div class="cd" id="cd"></div><div class="at">You can scan again ' + esc(fmtClock(until)) + '</div><div class="bar"><i></i></div>'
+      : '<div class="at">The reset time wasn\u2019t provided. Please wait a few minutes, then tap the button \u2014 if it\u2019s still limited, you\u2019ll see this message again.</div>') +
+    '<div class="at"><a href="https://claude.ai/settings/usage" target="_blank" rel="noopener noreferrer" style="color:var(--acc)">See your full usage</a></div><button type="button">' + (known ? 'Retry' : 'Try again') + '</button>';
+  out.appendChild(c);
+  const btn = c.querySelector('button'), cd = c.querySelector('.cd'), bar = c.querySelector('.bar i');
+  btn.disabled = known;
+  btn.onclick = () => {
+    if (busy) return;
+    out.closest('.msg').remove();
+    setLocked(0);
+    callApi(req.text, req.status);
+  };
+  if (known) {
+    setLocked(until);
+    const tick = () => {
+      if (!c.isConnected) { clearInterval(iv); return; }
+      const left = until - Date.now();
+      if (left <= 0) {
+        clearInterval(iv); setLocked(0);
+        cd.textContent = 'Ready \u2713'; cd.classList.add('ok');
+        bar.style.width = '100%'; btn.disabled = false;
+        return;
+      }
+      cd.textContent = fmtLeft(left) + ' left';
+      bar.style.width = (100 - left/total*100) + '%';
+    };
+    const iv = setInterval(tick, 1000); tick();
+  }
+}
+const USAGE_LINK = '<a href="https://claude.ai/settings/usage" target="_blank" rel="noopener noreferrer">Check your usage</a>';
+function updateUsage(r){
+  try {
+    const g = n => r.headers.get(n);
+    const rem = g('anthropic-ratelimit-requests-remaining'), lim = g('anthropic-ratelimit-requests-limit'), rst = g('anthropic-ratelimit-requests-reset');
+    if (rem == null) return;
+    const t = rst ? Date.parse(rst) : NaN;
+    document.getElementById('usage').innerHTML = 'Requests left: <strong>' + esc(rem) + '</strong>' + (lim ? ' of ' + esc(lim) : '') +
+      (isNaN(t) ? '' : ' \u00b7 resets ' + esc(fmtClock(t))) + ' \u00b7 ' + USAGE_LINK;
+  } catch (_) {}
+}
+function apiHeaders(){
+  const h = {'Content-Type':'application/json'}, k = getKey('anthKey');
+  if (k) { h['x-api-key']=k; h['anthropic-version']='2023-06-01'; h['anthropic-dangerous-direct-browser-access']='true'; }
+  return h;
+}
+const DORKS = [
+ ['Exposed files','site:{d} filetype:env'],
+ ['Exposed files','site:{d} (filetype:sql OR filetype:log OR filetype:bak OR filetype:ini)'],
+ ['Exposed files','site:{d} (filetype:xml OR filetype:json OR filetype:conf) (intext:password OR intext:api_key OR intext:secret)'],
+ ['Open directories','site:{d} intitle:"index of /"'],
+ ['Backup archives','site:{d} (filetype:zip OR filetype:gz OR filetype:tar OR filetype:7z OR filetype:rar)'],
+ ['Backup archives','site:{d} inurl:backup'],
+ ['Version control','site:{d} (inurl:.git OR inurl:.svn)'],
+ ['Admin / login panels','site:{d} (inurl:admin OR inurl:login OR inurl:wp-admin OR inurl:dashboard)'],
+ ['Misconfig files','site:{d} (intitle:phpinfo OR inurl:phpinfo.php)'],
+ ['Misconfig files','site:{d} inurl:config filetype:php']
 ];
-var RW={Critical:4,High:3,Medium:2,Low:1,Info:0};
-var $=function(i){return document.getElementById(i)};
-var lang="ms",dom="",cat="all",state={},custom=[];
-function cleanState(o){var r={};if(!o||typeof o!=="object")return r;Object.keys(o).slice(0,100).forEach(function(k){var v=o[k];if(/^[a-z0-9]{1,12}$/.test(k)&&v&&typeof v==="object"){r[k]={s:(v.s==="1"||v.s==="2")?v.s:"0",n:typeof v.n==="string"?v.n.slice(0,500):""}}});return r}
-function save(){try{localStorage.setItem("df_state",JSON.stringify({dom:dom,state:state}))}catch(e){}}
-
-function t(k){return T[lang][k]||k}
-function applyLang(){
-  document.documentElement.lang=lang;
-  document.querySelectorAll("[data-i]").forEach(function(e){e.textContent=t(e.getAttribute("data-i"))});
-  if(!$("out").hidden)render();
+async function runFullAudit(){
+  logMsg('u', 'Run full exposure audit on <strong>' + esc(DOMAIN) + '</strong>');
+  const dom = DOMAIN, key = getKey('serperKey');
+  busy = true; goSend.disabled = true;
+  const out = add('a', '');
+  let n = 0; const status = () => out.innerHTML = '<div class="stat">Running dork queries ' + n + '/' + DORKS.length + '\u2026</div>'; status();
+  const scoped = u => { try { const h = new URL(u).hostname; return h === dom || h.endsWith('.' + dom); } catch(_) { return false; } };
+  const res = await Promise.all(DORKS.map(async ([cat, t]) => {
+    const q = t.replace('{d}', dom);
+    try {
+      const r = await fetch('https://google.serper.dev/search', {method:'POST', headers:{'X-API-KEY':key,'Content-Type':'application/json'}, body:JSON.stringify({q, num:10})});
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const j = await r.json();
+      return {cat, q, hits:(j.organic||[]).filter(x => scoped(x.link)).map(x => ({title:(x.title||x.link).slice(0,100), url:x.link}))};
+    } catch(e) { return {cat, q, hits:[], err:e.message}; }
+    finally { n++; status(); }
+  }));
+  out.closest('.msg').remove();
+  const failed = res.filter(r => r.err).length;
+  logMsg('a', '<details><summary>' + res.length + ' dork queries run (tap to view)</summary><ul>' + res.map(r =>
+    '<li><code>' + esc(r.q) + '</code> \u2192 ' + (r.err ? 'error: ' + esc(r.err) : r.hits.length + ' result' + (r.hits.length===1?'':'s')) + '</li>').join('') + '</ul></details>');
+  if (failed === res.length) {
+    const e0 = res[0].err || '';
+    logMsg('a', '<p>All searches failed (' + esc(e0) + ').</p><p>' + (/HTTP 40[13]/.test(e0) ? 'Serper rejected the key. Re-check it on serper.dev.' : /HTTP 4(29|00)/.test(e0) ? 'Serper says you are out of credits or rate limited.' : 'The browser blocked the request (CORS, or the page is running inside Claude\u2019s preview). Open this file directly in your browser or on GitHub Pages; if it still fails, Serper needs a small proxy.') + '</p>');
+    busy = false; setLocked(limitUntil); saveSession(); return;
+  }
+  const cats = [...new Set(res.map(r => r.cat))];
+  if (getKey('anthKey')) {
+    const data = cats.map(c => ({category:c, queries:res.filter(r => r.cat===c).map(r => ({query:r.q, error:r.err||undefined, hits:r.hits}))}));
+    busy = false;
+    return callApi('DORK SCAN RESULTS for site:' + dom + ' (' + res.length + ' fixed queries). Write the full exposure report from these only:\n' + JSON.stringify(data), 'Writing report\u2026', true);
+  }
+  let hit = 0;
+  const html = cats.map(c => {
+    const items = []; res.filter(r => r.cat===c).forEach(r => r.hits.forEach(h => { if (!items.some(i => i.url===h.url)) items.push(h); }));
+    if (items.length) hit++;
+    return '<p><strong>' + esc(c) + '</strong></p>' + (items.length ? '<ul>' + items.map(h => '<li><a href="' + esc(h.url) + '" target="_blank" rel="noopener noreferrer">' + esc(h.title) + '</a></li>').join('') + '</ul>' : '<p>Nothing indexed.</p>');
+  }).join('') + '<p><strong>' + hit + ' of ' + cats.length + ' checks found indexed items.</strong> Add an Anthropic key for an AI-written report and follow-up questions.</p>' + (failed ? '<p>' + failed + ' quer' + (failed===1?'y':'ies') + ' failed.</p>' : '');
+  logMsg('a', html);
+  busy = false; setLocked(limitUntil); saveSession();
 }
-function validDomain(s){return /^(?=.{4,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,24}$/.test(s)}
-function cleanDomain(s){return s.trim().toLowerCase().replace(/^https?:\/\//,"").replace(/^www\./,"").replace(/[\/?#].*$/,"")}
-function url(q){var e=$("eng").value,b=e==="b"?"https://www.bing.com/search?q=":e==="d"?"https://duckduckgo.com/?q=":"https://www.google.com/search?q=";return b+encodeURIComponent(q)}
-function items(){
-  var a=D.map(function(d){return{id:d[0],cat:d[1],risk:d[2],owasp:d[3],q:d[4],desc:d[5],fix:d[6]}});
-  custom.forEach(function(c,i){a.push({id:"c"+i,cat:"Custom",risk:"Info",owasp:"-",q:c,desc:["Custom dork","Dork tersuai"],fix:["Review results and apply the matching fix.","Semak hasil dan laksanakan pembaikan yang sesuai."]})});
-  return a;
+async function callApi(userText, statusText, noTools){
+  busy = true; goSend.disabled = true; lastReq = {text:userText, status:statusText};
+  const out = add('a', '<div class="stat">' + esc(statusText) + '</div>');
+  hist.push({role:'user', content:userText});
+  const blocks = [];
+  let answer = '', shownText = false;
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers: apiHeaders(),
+      body: JSON.stringify(Object.assign({
+        model:'claude-sonnet-4-6', max_tokens:2500, system: SYSTEM(), stream: true,
+        messages: hist
+      }, noTools ? {} : {tools:[{type:'web_search_20250305', name:'web_search', max_uses:4}]}))
+    });
+    updateUsage(r);
+    if (!r.ok) {
+      const d = await r.json().catch(() => ({}));
+      const msg = d.error?.message || 'Request failed';
+      const err = new Error(msg); err.limit = isLimitErr(r.status, d.error?.type, msg);
+      err.secs = err.limit ? parseWaitSecs(r, msg) : null; err.status = r.status;
+      throw err;
+    }
+    const reader = r.body.getReader(), decoder = new TextDecoder();
+    let buf = '';
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const chunks = buf.split('\n\n'); buf = chunks.pop();
+      for (const chunk of chunks) {
+        const line = chunk.split('\n').find(l => l.startsWith('data:'));
+        if (!line) continue;
+        let evt; try { evt = JSON.parse(line.slice(5).trim()); } catch (_) { continue; }
+        if (evt.type === 'content_block_start') {
+          const cb = evt.content_block;
+          blocks[evt.index] = cb.type === 'text' ? { type: 'text', text: '' } : cb;
+          if (!shownText && (cb.type === 'server_tool_use' || cb.type === 'web_search_tool_result'))
+            out.innerHTML = '<div class="stat">Searching\u2026</div>';
+        } else if (evt.type === 'content_block_delta' && evt.delta.type === 'text_delta') {
+          const b = blocks[evt.index]; if (!b) continue;
+          b.text += evt.delta.text; shownText = true;
+          answer = blocks.filter(x => x && x.type === 'text').map(x => x.text).join('');
+          out.innerHTML = md(answer);
+          chat.scrollTop = chat.scrollHeight;
+        } else if (evt.type === 'error') {
+          const msg = evt.error?.message || 'Request failed';
+          const err = new Error(msg); err.limit = isLimitErr(null, evt.error?.type, msg);
+          err.secs = err.limit ? parseWaitSecs(null, msg) : null;
+          throw err;
+        }
+      }
+    }
+    const seen = new Map();
+    blocks.forEach(c => {
+      if (c && c.type === 'web_search_tool_result' && Array.isArray(c.content))
+        c.content.forEach(x => { if (x.url && !seen.has(x.url)) seen.set(x.url, x.title || x.url); });
+    });
+    let html = md(answer || 'No results came back.');
+    if (seen.size) html += '<div class="src">' + [...seen].slice(0,10).map(([u,t]) =>
+      '<a href="' + esc(u) + '" target="_blank" rel="noopener noreferrer" title="' + esc(u) + '">' + esc(t) + '</a>').join('') + '</div>';
+    out.innerHTML = html;
+    displayLog.push({role:'a', html});
+    hist.push({role:'assistant', content: answer || '(no answer)'});
+  } catch (e) {
+    hist.pop();
+    if (e.limit) showLimit(out, e.secs, lastReq);
+    else {
+      const net = e instanceof TypeError;
+      out.innerHTML = '<p>' + (net ? 'Couldn\u2019t reach the service. Check your connection and try again.'
+        : e.status === 529 || e.status === 503 ? 'The service is busy right now. Please try again in a minute.'
+        : 'Something went wrong, please try again.') + '</p>';
+    }
+  }
+  busy = false; setLocked(limitUntil); chat.scrollTop = chat.scrollHeight; saveSession();
 }
-function mk(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
-
-function render(){
-  var all=items(),L=lang==="ms"?1:0;
-  var cats=["all"].concat(Array.from(new Set(all.map(function(x){return x.cat}))));
-  var cw=$("cats");cw.textContent="";
-  cats.forEach(function(c){var b=mk("button",null,c==="all"?t("all"):c);b.type="button";b.setAttribute("aria-pressed",String(c===cat));b.onclick=function(){cat=c;render()};cw.appendChild(b)});
-  var lw=$("list");lw.textContent="";
-  var checked=0,exposed=0,pts=0,max=0;
-  all.forEach(function(x){
-    var s=(state[x.id]||{}).s||"0";max+=RW[x.risk]+1;
-    if(s!=="0")checked++;if(s==="2"){exposed++;pts+=RW[x.risk]+1}
-    if(cat!=="all"&&x.cat!==cat)return;
-    var q=x.q.split("{d}").join(dom);
-    var c=mk("div","card"+(s!=="0"?" done":""));
-    var h=mk("div");var tg=mk("span","tag "+x.risk,x.risk);h.appendChild(tg);
-    h.appendChild(mk("span","mut","OWASP "+x.owasp+" - "+x.cat));c.appendChild(h);
-    c.appendChild(mk("p",null,x.desc[L]));
-    c.appendChild(mk("div","q",q));
-    var bt=mk("div","btns");
-    var cp=mk("button",null,t("copy"));cp.type="button";
-    cp.onclick=function(){var done=function(){cp.textContent=t("copied");setTimeout(function(){cp.textContent=t("copy")},1200)};
-      if(navigator.clipboard)navigator.clipboard.writeText(q).then(done,function(){});};
-    var op=mk("button","p",t("open"));op.type="button";
-    op.onclick=function(){window.open(url(q),"_blank","noopener,noreferrer")};
-    bt.appendChild(cp);bt.appendChild(op);c.appendChild(bt);
-    var dt=mk("details");dt.appendChild(mk("summary",null,t("why")));
-    dt.appendChild(mk("p",null,t("fix")+": "+x.fix[L]));
-    var sel=mk("select");sel.setAttribute("aria-label",t("status"));
-    [["0","s0"],["1","s1"],["2","s2"]].forEach(function(o){var op2=mk("option",null,t(o[1]));op2.value=o[0];if(o[0]===s)op2.selected=true;sel.appendChild(op2)});
-    sel.onchange=function(){(state[x.id]=state[x.id]||{}).s=sel.value;render()};
-    var nt=mk("textarea");nt.rows=2;nt.placeholder=t("note");nt.value=(state[x.id]||{}).n||"";nt.maxLength=500;
-    nt.oninput=function(){(state[x.id]=state[x.id]||{}).n=nt.value;save()};
-    dt.appendChild(sel);dt.appendChild(nt);c.appendChild(dt);lw.appendChild(c);
-  });
-  var sc=max?Math.round(pts/max*100):0;
-  var sm=$("sum");sm.textContent="";
-  [[t("tot"),all.length],[t("chk"),checked],[t("exposed"),exposed],[t("score"),sc+"%"]].forEach(function(p){var d=mk("div");d.appendChild(mk("b",null,String(p[1])));d.appendChild(mk("span","mut",p[0]));sm.appendChild(d)});
-  save();
-}
-
-function report(){
-  var all=items(),L=lang==="ms"?1:0,sn=[t("s0"),t("s1"),t("s2")];
-  var o=["# Exposure Self-Check Report","","- Domain: "+dom,"- Date: "+new Date().toISOString().slice(0,10),"- Tool: Dork Finder (FYP, Cybersecurity)","- "+t("score")+": "+$("sum").lastChild.firstChild.textContent,"","| Risk | OWASP | Check | Status | Notes |","|---|---|---|---|---|"];
-  all.forEach(function(x){var st=state[x.id]||{};
-    o.push("| "+x.risk+" | "+x.owasp+" | "+x.desc[L].replace(/\|/g,"/")+" | "+sn[+(st.s||0)]+" | "+(st.n||"").replace(/[|\r\n]+/g," ")+" |")});
-  o.push("","## Remediation for exposed items","");
-  var any=false;all.forEach(function(x){if((state[x.id]||{}).s==="2"){any=true;o.push("- ["+x.risk+"] "+x.desc[L]+" -> "+x.fix[L])}});
-  if(!any)o.push("- None marked exposed.");
-  o.push("","_Run only on domains you own or have written permission to test._");
-  var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([o.join("\n")],{type:"text/markdown"}));
-  a.download="dork-report-"+dom+".md";document.body.appendChild(a);a.click();a.remove();
-}
-
-$("go").onclick=function(){
-  var d=cleanDomain($("dom").value);
-  if(!validDomain(d)){$("err").textContent=t("eDom");return}
-  if(!$("auth").checked){$("err").textContent=t("eAuth");return}
-  $("err").textContent="";dom=d;$("out").hidden=false;render();$("out").scrollIntoView({behavior:"smooth"});
-};
-$("cadd").onclick=function(){
-  var v=$("cq").value.trim();
-  if(v.indexOf("{d}")<0||v.length>200){$("err").textContent=t("eC");return}
-  $("err").textContent="";custom.push(v);$("cq").value="";
-  try{localStorage.setItem("df_custom",JSON.stringify(custom))}catch(e){}
-  render();
-};
-$("imp").onclick=function(){$("impf").click()};
-$("impf").onchange=function(){var f=this.files[0];this.value="";if(!f)return;if(f.size>1e6){$("err").textContent=t("impe");return}var r=new FileReader();r.onload=function(){try{var j=JSON.parse(r.result);if(!j||!Array.isArray(j.results))throw 0;if(cleanDomain(String(j.domain||""))!==dom){$("err").textContent=t("impd");return}j.results.forEach(function(x){if(x&&/^[a-z0-9]{1,12}$/.test(x.id)&&(x.status==="1"||x.status==="2")){state[x.id]={s:x.status,n:String(x.note||"").slice(0,500)}}});$("err").textContent="";render()}catch(e){$("err").textContent=t("impe")}};r.readAsText(f)};
-$("exp").onclick=report;
-$("reset").onclick=function(){state={};render()};
-$("lang").onclick=function(){lang=lang==="ms"?"en":"ms";applyLang()};
-try{var s=JSON.parse(localStorage.getItem("df_custom")||"[]");if(Array.isArray(s))custom=s.filter(function(x){return typeof x==="string"&&x.length<=200}).slice(0,20)}catch(e){}
-try{var P=JSON.parse(localStorage.getItem("df_state")||"{}");if(P&&validDomain(String(P.dom))){dom=P.dom;state=cleanState(P.state);$("dom").value=dom;$("auth").checked=true;$("out").hidden=false}}catch(e){}
-applyLang();
-})();
+document.getElementById('f').addEventListener('submit', e => {
+  e.preventDefault();
+  const text = qEl.value.trim(); if (!text || busy || !DOMAIN || limitUntil > Date.now()) return;
+  qEl.value = ''; qEl.style.height = 'auto';
+  logMsg('u', esc(text));
+  callApi(text, 'Checking ' + DOMAIN + '…');
+});
+qEl.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.getElementById('f').requestSubmit(); } });
+qEl.addEventListener('input', () => { qEl.style.height = 'auto'; qEl.style.height = qEl.scrollHeight + 'px'; });
 </script>
 </body>
 </html>
