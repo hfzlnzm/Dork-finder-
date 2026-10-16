@@ -360,15 +360,27 @@ function apiHeaders(){
 }
 const DORKS = [
  ['Exposed files','site:{d} filetype:env'],
- ['Exposed files','site:{d} (filetype:sql OR filetype:log OR filetype:bak OR filetype:ini)'],
- ['Exposed files','site:{d} (filetype:xml OR filetype:json OR filetype:conf) (intext:password OR intext:api_key OR intext:secret)'],
+ ['Exposed files','site:{d} (filetype:sql OR filetype:dbf OR filetype:mdb)'],
+ ['Exposed files','site:{d} (filetype:log OR filetype:bak OR filetype:old OR filetype:swp)'],
+ ['Exposed files','site:{d} (filetype:xml OR filetype:json OR filetype:yml OR filetype:conf OR filetype:cfg OR filetype:ini) (intext:password OR intext:api_key OR intext:secret)'],
+ ['Exposed files','site:{d} (filetype:pem OR filetype:key OR filetype:ppk OR filetype:p12 OR filetype:kdbx)'],
+ ['Exposed files','site:{d} filetype:txt (intext:password OR intext:username)'],
+ ['Sensitive documents','site:{d} (filetype:pdf OR filetype:doc OR filetype:docx OR filetype:xls OR filetype:xlsx OR filetype:csv) (intext:confidential OR intext:"internal use only" OR intext:password)'],
  ['Open directories','site:{d} intitle:"index of /"'],
+ ['Open directories','site:{d} intitle:"index of" (backup OR db OR config OR uploads OR private)'],
  ['Backup archives','site:{d} (filetype:zip OR filetype:gz OR filetype:tar OR filetype:7z OR filetype:rar)'],
- ['Backup archives','site:{d} inurl:backup'],
- ['Version control','site:{d} (inurl:.git OR inurl:.svn)'],
+ ['Backup archives','site:{d} inurl:(backup OR dump OR db_backup OR bak OR old)'],
+ ['Version control','site:{d} (inurl:.git OR inurl:.svn OR inurl:.hg)'],
+ ['Version control','site:{d} intitle:"index of" (".git" OR ".svn")'],
  ['Admin / login panels','site:{d} (inurl:admin OR inurl:login OR inurl:wp-admin OR inurl:dashboard)'],
+ ['Admin / login panels','site:{d} inurl:(phpmyadmin OR adminer OR cpanel OR webmin)'],
  ['Misconfig files','site:{d} (intitle:phpinfo OR inurl:phpinfo.php)'],
- ['Misconfig files','site:{d} inurl:config filetype:php']
+ ['Misconfig files','site:{d} inurl:config filetype:php'],
+ ['Misconfig files','site:{d} (intitle:"Apache Status" OR inurl:server-status OR inurl:server-info)'],
+ ['Error messages & debug','site:{d} (intext:"sql syntax near" OR intext:"Warning: mysql_" OR intext:"Fatal error" OR intext:"Stack trace")'],
+ ['API & dev environments','site:{d} inurl:(swagger OR api-docs OR graphql OR openapi)'],
+ ['API & dev environments','site:{d} inurl:(staging OR dev OR test OR debug OR beta)'],
+ ['Subdomains','site:*.{d} -site:www.{d}']
 ];
 async function runFullAudit(){
   logMsg('u', 'Run full exposure audit on <strong>' + esc(DOMAIN) + '</strong>');
