@@ -493,7 +493,7 @@ async function callApi(userText, statusText, noTools){
       const net = e instanceof TypeError;
       out.innerHTML = '<p>' + (net ? 'Couldn\u2019t reach the service. Check your connection and try again.'
         : e.status === 529 || e.status === 503 ? 'The service is busy right now. Please try again in a minute.'
-        : 'Something went wrong, please try again.') + '</p>';
+        : 'Something went wrong' + (e.message ? ': ' + esc(e.message) : '') + (e.status === 401 ? '. Your Anthropic key looks invalid; re-copy it.' : e.status === 400 && /credit/i.test(e.message||'') ? '. Add credit under Billing in the Anthropic console.' : e.status === 404 ? '. The model name may be retired.' : '') + '.') + '</p>';
     }
   }
   busy = false; setLocked(limitUntil); chat.scrollTop = chat.scrollHeight; saveSession();
