@@ -1,44 +1,92 @@
-# Dork Finder – Exposure Self-Check
+# Site Exposure Audit
 
-Final Year Project, Bachelor in Cybersecurity.
+**Automating Open Source Intelligence (OSINT): A Framework for Passive Threat Intelligence Gathering via Advanced Google Dorking**
 
-A defensive tool that helps website owners find information their own domain leaks through search engines and common misconfigurations. It has two parts:
+**Live tool:** https://hfzlnzm.github.io/Site-exposure-audit/
 
-1. **Web tool (`index.html`)** – builds search-engine dork queries for your domain, maps each to an OWASP Top 10 (2021) category and risk level, gives a fix, tracks your findings, and exports a Markdown report. Runs fully in the browser; no data is sent anywhere. English and Bahasa Melayu.
-2. **Scanner (`scanner.py`)** – optional Python script (standard library only) that checks a small set of well-known paths on your domain and writes a JSON file you can import into the web tool. It refuses to run unless you prove ownership.
+Site Exposure Audit is a browser-based tool that automates Google dorking against a domain you own. With one click it runs a fixed library of dork queries, collects the publicly indexed results, and (optionally) uses an AI model to turn them into a written exposure report.
 
-## Usage
+> **Authorized use only.** Scan only domains you own or have written permission to test. The tool asks you to confirm this before every scan.
 
-**Web tool:** open `index.html` (or the GitHub Pages link), enter your domain, tick the permission box, then work through the dork list. Mark each as Clean/Exposed, add notes, export the report.
+---
 
-**Scanner:**
+## How it works
+
 ```
-# 1. create a secret (12+ chars) and publish it on your own site
-echo "my-long-secret-token" > .well-known/dorkfinder-verify.txt
-# 2. run
-python3 scanner.py example.com --token my-long-secret-token
-# 3. in the web tool, use "Import scanner results" with the JSON file
+Domain  ->  22 fixed dork queries  ->  Serper (Google results)  ->  Filter to target domain  ->  Report
 ```
-The scanner sends one GET request per path (1s delay), identifies itself in the User-Agent, rejects IP addresses, and ignores redirects to other hosts.
 
-## Method (for the report)
+1. **Input:** you enter a domain and confirm you are authorized to test it.
+2. **Collection:** the tool runs 22 dork queries, all scoped with `site:yourdomain.com`, through the Serper API, which returns real Google results.
+3. **Filtering:** only results that belong to the target domain or its subdomains are kept.
+4. **Reporting:**
+   - **With only a Serper key:** results are grouped by category with links.
+   - **With an Anthropic key as well:** Claude writes a structured exposure report (findings, why they matter, remediation) from those results only, and you can ask follow-up questions.
 
-- **Approach:** Design Science Research – build an artefact, evaluate it, refine.
-- **Research questions:** (1) How well do search-engine dorks and lightweight path checks detect common exposure on a domain compared with manual review? (2) Does mapping findings to OWASP categories with fixes help owners act on them?
-- **Evaluation plan:** deploy a test site you control (e.g. a small web app with planted `.env`, `.git`, `backup.sql`, directory listing, `phpinfo.php`, and a few clean controls). Run the tool and compare against a manually verified ground truth. Report true/false positives, false negatives, precision and recall per check, and time taken. Compare features with GHDB, Pagodo and DorkSearch.
-- **Risk scoring:** each finding is weighted by tier (Critical 5, High 4, Medium 3, Low 2, Info 1); the score is exposed weight divided by total weight. This is a simple triage aid, not CVSS. Discuss this limitation.
+The tool is **passive**: it only queries a search engine for already-indexed information. It never sends a request to the target website.
+
+---
+
+## Dork categories
+
+| Category | Examples of what is checked |
+|---|---|
+| Exposed files | `.env`, SQL/database files, logs, backups, config files with secrets, private keys |
+| Sensitive documents | PDF, Word, Excel and CSV files marked confidential or containing passwords |
+| Open directories | `index of /` listings, folders named backup, config or uploads |
+| Backup archives | zip, tar, gz, rar, 7z files and `backup` / `dump` URLs |
+| Version control | `.git`, `.svn`, `.hg` exposure |
+| Admin / login panels | admin, login, phpMyAdmin, Adminer, cPanel, Webmin |
+| Misconfig files | `phpinfo`, PHP config files, Apache status pages |
+| Error messages & debug | SQL errors, fatal errors, stack traces |
+| API & dev environments | Swagger, GraphQL, staging, dev and test pages |
+| Subdomains | Indexed subdomains of the target |
+
+The full list lives in the `DORKS` array inside `index.html`. To add a dork, add a line with a category name and a query, using `{d}` where the domain goes.
+
+---
+
+## Using the tool
+
+1. Open the live link above.
+2. Enter your **Serper API key** (required). Get one at [serper.dev](https://serper.dev).
+3. Optionally enter an **Anthropic API key** for the AI report and follow-ups. Get one at [console.anthropic.com](https://console.anthropic.com). The API is billed separately from a Claude subscription.
+4. Enter the domain, tick the authorization box, and start the scan.
+5. Open the "dork queries run" dropdown to see every query that was executed and how many results each returned.
+
+Recent audits are saved in the sidebar so you can reopen them.
+
+---
+
+## Privacy and security
+
+- API keys are stored only in **your own browser** (`localStorage`). They are never sent anywhere except directly to Serper and Anthropic.
+- No keys are stored in this repository. Never commit a key to it.
+- Set a monthly spend limit in your Anthropic console, and watch your Serper credit balance.
+
+---
 
 ## Limitations
 
-- Dork results depend on what search engines have indexed and change over time.
-- Dorks are opened manually, so the review step is human. Search engines may rate-limit or block automated queries, which is why the tool does not automate them.
-- Scanner checks use a fixed path list and content signatures to reduce false positives, but cannot find custom-named files.
-- Not a substitute for a full vulnerability assessment.
+- Results depend on what Google has indexed. **No results does not mean the site is safe**; it only means nothing was indexed for that query.
+- Search results can include false positives, so confirm every finding manually before acting on it.
+- Each scan uses 22 Serper credits.
+- AI-written reports can contain mistakes. Treat them as a draft, not a final verdict.
+- Follow-up questions answer from the scan results already in the chat.
 
-## Ethics and law
+---
 
-Use only on domains you own or have written permission to test. Unauthorised access is an offence under Malaysia's Computer Crimes Act 1997 (Akta Jenayah Komputer 1997). Personal data found should be handled under the PDPA 2010.
+## Project structure
 
-## Licence
+```
+index.html   The whole tool (HTML, CSS and JavaScript in one file)
+README.md    This file
+```
 
-MIT (add a `LICENSE` file).
+Hosted on GitHub Pages.
+
+---
+
+## Disclaimer
+
+This project is for education and for auditing assets you are authorized to assess. The author is not responsible for misuse. Scanning systems without permission may be illegal in your country.
